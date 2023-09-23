@@ -1,0 +1,67 @@
+{
+  "name": "@vinicunca/eslint-plugin-vinicunca",
+  "type": "module",
+  "version": "1.0.0-beta",
+  "packageManager": "pnpm@8.7.6",
+  "description": "Vinicunca ESLint rules",
+  "author": {
+    "name": "praburangki",
+    "email": "praburangki@gmail.com",
+    "url": "https://praburangki.dev"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/vinicunca/eslint-plugin-vinicunca#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vinicunca/eslint-plugin-vinicunca.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vinicunca/eslint-plugin-vinicunca/issues"
+  },
+  "keywords": [],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "unbuild",
+    "dev": "unbuild --stub",
+    "lint": "pnpm run dev && eslint .",
+    "prepublishOnly": "pnpm run build",
+    "release": "bumpp && npm publish",
+    "start": "tsx src/index.ts",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@typescript-eslint/utils": "^6.7.2"
+  },
+  "devDependencies": {
+    "@vinicunca/eslint-config": "2.0.0-beta.2",
+    "@types/eslint": "^8.44.2",
+    "@types/lodash.merge": "^4.6.7",
+    "@types/node": "^20.6.3",
+    "@types/semver": "^7.5.2",
+    "@typescript-eslint/rule-tester": "^6.7.2",
+    "@typescript-eslint/typescript-estree": "6.7.2",
+    "@typescript-eslint/utils": "6.7.2",
+    "ajv": "^6.10.0",
+    "bumpp": "^9.2.0",
+    "eslint": "^8.50.0",
+    "eslint-define-config": "^1.23.0",
+    "lodash.merge": "4.6.2",
+    "rimraf": "^5.0.1",
+    "semver": "^7.5.4",
+    "tsx": "^3.12.10",
+    "typescript": "^5.2.2",
+    "unbuild": "^2.0.0",
+    "vitest": "^0.34.5"
+  }
+}
