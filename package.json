@@ -36,15 +36,14 @@
     "dev": "unbuild --stub",
     "lint": "pnpm run dev && eslint .",
     "prepublishOnly": "pnpm run build",
-    "release": "bumpp && npm publish",
-    "start": "tsx src/index.ts",
+    "registry": "pnpm publish --access public --no-git-checks",
+    "release": "bumpp package.json --commit --push --tag --commit 'chore: release v'",
     "test": "vitest"
   },
   "dependencies": {
     "@typescript-eslint/utils": "^6.7.2"
   },
   "devDependencies": {
-    "@vinicunca/eslint-config": "2.0.0-beta.2",
     "@types/eslint": "^8.44.2",
     "@types/lodash.merge": "^4.6.7",
     "@types/node": "^20.6.3",
@@ -52,6 +51,7 @@
     "@typescript-eslint/rule-tester": "^6.7.2",
     "@typescript-eslint/typescript-estree": "6.7.2",
     "@typescript-eslint/utils": "6.7.2",
+    "@vinicunca/eslint-config": "2.0.0-beta.2",
     "ajv": "^6.10.0",
     "bumpp": "^9.2.0",
     "eslint": "^8.50.0",

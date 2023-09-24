@@ -1,8 +1,3 @@
-import antfu from '@antfu/eslint-config'
+import { vinicuncaESLint } from '@vinicunca/eslint-config';
 
-export default antfu(
-  undefined,
-  {
-    ignores: ['vendor'],
-  },
-)
+export default vinicuncaESLint({});
