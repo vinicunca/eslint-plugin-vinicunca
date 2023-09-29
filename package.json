@@ -2,7 +2,7 @@
   "name": "@vinicunca/eslint-plugin-vinicunca",
   "type": "module",
   "version": "1.0.0-beta.1",
-  "packageManager": "pnpm@8.7.6",
+  "packageManager": "pnpm@8.8.0",
   "description": "Vinicunca ESLint rules",
   "author": {
     "name": "praburangki",
@@ -41,23 +41,23 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@typescript-eslint/utils": "^6.7.2"
+    "@typescript-eslint/utils": "^6.7.3"
   },
   "devDependencies": {
-    "@types/eslint": "^8.44.2",
+    "@types/eslint": "^8.44.3",
     "@types/lodash.merge": "^4.6.7",
-    "@types/node": "^20.6.3",
-    "@types/semver": "^7.5.2",
-    "@typescript-eslint/rule-tester": "^6.7.2",
-    "@typescript-eslint/typescript-estree": "6.7.2",
-    "@typescript-eslint/utils": "6.7.2",
+    "@types/node": "^20.7.1",
+    "@types/semver": "^7.5.3",
+    "@typescript-eslint/rule-tester": "^6.7.3",
+    "@typescript-eslint/typescript-estree": "^6.7.3",
+    "@typescript-eslint/utils": "^6.7.3",
     "@vinicunca/eslint-config": "2.0.0-beta.2",
     "ajv": "^6.10.0",
     "bumpp": "^9.2.0",
     "eslint": "^8.50.0",
     "eslint-define-config": "^1.23.0",
     "lodash.merge": "4.6.2",
-    "rimraf": "^5.0.1",
+    "rimraf": "^5.0.5",
     "semver": "^7.5.4",
     "tsx": "^3.12.10",
     "typescript": "^5.2.2",

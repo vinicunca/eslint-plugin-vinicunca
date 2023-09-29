@@ -23,12 +23,12 @@ export default createEslintRule<Options, MessageIds>({
   name: RULE_NAME,
 
   meta: {
-    type: 'suggestion',
+    type: 'layout',
     docs: {
       description: 'Having line breaks styles to object, array and named imports',
       recommended: 'stylistic',
     },
-    fixable: 'code',
+    fixable: 'whitespace',
     schema: [],
     messages: {
       shouldWrap: 'Should have line breaks between items',
