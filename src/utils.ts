@@ -1,5 +1,5 @@
-import { ESLintUtils } from '@typescript-eslint/utils';
+import { RuleCreator } from '@typescript-eslint/utils/eslint-utils';
 
-export const createEslintRule = ESLintUtils.RuleCreator(
-  (ruleName) => ruleName,
+export const createEslintRule = RuleCreator(
+  (ruleName) => `https://eslint.vinicunca.dev/plugin-vinicunca/${ruleName}`,
 );
