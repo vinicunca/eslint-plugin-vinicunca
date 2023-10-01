@@ -5,18 +5,20 @@ import { createEslintRule } from '../utils';
 export const RULE_NAME = 'consistent-list-newline';
 export type MessageIds = 'shouldWrap' | 'shouldNotWrap';
 export type Options = [{
-  FunctionDeclaration?: boolean;
-  FunctionExpression?: boolean;
+  ArrayExpression?: boolean;
   ArrowFunctionExpression?: boolean;
   CallExpression?: boolean;
-  ObjectExpression?: boolean;
-  ArrayExpression?: boolean;
-  ImportDeclaration?: boolean;
   ExportNamedDeclaration?: boolean;
-  TSInterfaceDeclaration?: boolean;
-  TSTypeLiteral?: boolean;
-  TSTupleType?: boolean;
+  FunctionDeclaration?: boolean;
+  FunctionExpression?: boolean;
+  ImportDeclaration?: boolean;
   NewExpression?: boolean;
+  ObjectExpression?: boolean;
+  TSInterfaceDeclaration?: boolean;
+  TSTupleType?: boolean;
+  TSTypeLiteral?: boolean;
+  TSTypeParameterDeclaration?: boolean;
+  TSTypeParameterInstantiation?: boolean;
 }];
 
 export default createEslintRule<Options, MessageIds>({
@@ -173,6 +175,12 @@ export default createEslintRule<Options, MessageIds>({
       NewExpression: (node) => {
         check(node, node.arguments, node.callee);
       },
+      TSTypeParameterDeclaration(node) {
+        check(node, node.params);
+      },
+      TSTypeParameterInstantiation(node) {
+        check(node, node.params);
+      },
     } satisfies RuleListener;
 
     type KeysListener = keyof typeof listenser;
@@ -180,9 +188,9 @@ export default createEslintRule<Options, MessageIds>({
 
     // Type assertion to check if all keys are exported
     exportType<KeysListener, KeysOptions>();
-    exportType<KeysOptions, KeysListener>()
+    exportType<KeysOptions, KeysListener>();
 
-    ;(Object.keys(options) as KeysOptions[])
+    (Object.keys(options) as KeysOptions[])
       .forEach((key) => {
         if (options[key] === false) {
           // eslint-disable-next-line ts/no-dynamic-delete
@@ -196,3 +204,4 @@ export default createEslintRule<Options, MessageIds>({
 
 // eslint-disable-next-line ts/no-unused-vars
 function exportType<A, B extends A>() {}
+

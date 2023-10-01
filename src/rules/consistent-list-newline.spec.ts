@@ -43,6 +43,10 @@ const invalid = [
   'type Foo = [1,2,\n3]',
   'new Foo(1,2,\n3)',
   'new Foo(\n1,2,\n3)',
+  'foo(\n()=>bar(),\n()=>\nbaz())',
+  'foo(()=>bar(),\n()=>\nbaz())',
+  'foo<X,\nY>()',
+  'function foo<\nX,Y>() {}',
 ] as const;
 
 const ruleTester: RuleTester = new RuleTester({
