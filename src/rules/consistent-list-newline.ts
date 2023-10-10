@@ -1,5 +1,5 @@
-import type { RuleFixer, RuleListener } from '@typescript-eslint/utils/ts-eslint';
-import type { TSESTree } from '@typescript-eslint/utils';
+import { type RuleFixer, type RuleListener } from '@typescript-eslint/utils/ts-eslint';
+import { type TSESTree } from '@typescript-eslint/utils';
 import { createEslintRule } from '../utils';
 
 export const RULE_NAME = 'consistent-list-newline';
@@ -19,6 +19,8 @@ export type Options = [{
   TSTypeLiteral?: boolean;
   TSTypeParameterDeclaration?: boolean;
   TSTypeParameterInstantiation?: boolean;
+  ObjectPattern?: boolean;
+  ArrayPattern?: boolean;
 }];
 
 export default createEslintRule<Options, MessageIds>({
@@ -110,6 +112,10 @@ export default createEslintRule<Options, MessageIds>({
           },
         });
       } else if (mode === 'inline' && endLoc.line !== lastLine) {
+        // If there is only one multiline item, we allow the closing bracket to be on the a different line
+        if (items.length === 1 && items[0].loc.start.line !== items[1]?.loc.start.line) {
+          return;
+        };
         context.report({
           node: lastItem,
           messageId: 'shouldNotWrap',
@@ -158,9 +164,19 @@ export default createEslintRule<Options, MessageIds>({
         );
       },
       CallExpression: (node) => {
-        const startNode = node.callee.type === 'MemberExpression'
-          ? node.callee.property
-          : node.callee;
+        let startNode: TSESTree.PrivateIdentifier | TSESTree.Expression | TSESTree.TypeNode;
+
+        if (node.typeArguments?.params.length) {
+          // if has type generic, check the last type argument
+          startNode = node.typeArguments.params[node.typeArguments.params.length - 1];
+        } else if (node.callee.type === 'MemberExpression') {
+          // if the callee is a member expression, get the property
+          startNode = node.callee.property;
+        } else {
+          // else get the callee
+          startNode = node.callee;
+        }
+
         check(node, node.arguments, startNode);
       },
       TSInterfaceDeclaration: (node) => {
@@ -181,22 +197,26 @@ export default createEslintRule<Options, MessageIds>({
       TSTypeParameterInstantiation(node) {
         check(node, node.params);
       },
+      ObjectPattern(node) {
+        check(node, node.properties);
+      },
+      ArrayPattern(node) {
+        check(node, node.elements);
+      },
     } satisfies RuleListener;
 
     type KeysListener = keyof typeof listenser;
     type KeysOptions = keyof Options[0];
 
     // Type assertion to check if all keys are exported
-    exportType<KeysListener, KeysOptions>();
     exportType<KeysOptions, KeysListener>();
 
-    (Object.keys(options) as KeysOptions[])
-      .forEach((key) => {
-        if (options[key] === false) {
-          // eslint-disable-next-line ts/no-dynamic-delete
-          delete listenser[key];
-        }
-      });
+    (Object.keys(options) as KeysOptions[]).forEach((key) => {
+      if (options[key] === false) {
+        // eslint-disable-next-line ts/no-dynamic-delete
+        delete listenser[key];
+      };
+    });
 
     return listenser;
   },
@@ -204,4 +224,3 @@ export default createEslintRule<Options, MessageIds>({
 
 // eslint-disable-next-line ts/no-unused-vars
 function exportType<A, B extends A>() {}
-
