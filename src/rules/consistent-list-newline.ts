@@ -126,7 +126,7 @@ export default createEslintRule<Options, MessageIds>({
       }
     }
 
-    const listenser = {
+    const listener = {
       ObjectExpression: (node) => {
         check(node, node.properties);
       },
@@ -205,20 +205,22 @@ export default createEslintRule<Options, MessageIds>({
       },
     } satisfies RuleListener;
 
-    type KeysListener = keyof typeof listenser;
+    type KeysListener = keyof typeof listener;
+
     type KeysOptions = keyof Options[0];
 
     // Type assertion to check if all keys are exported
+    exportType<KeysListener, KeysOptions>();
     exportType<KeysOptions, KeysListener>();
 
     (Object.keys(options) as KeysOptions[]).forEach((key) => {
       if (options[key] === false) {
         // eslint-disable-next-line ts/no-dynamic-delete
-        delete listenser[key];
+        delete listener[key];
       };
     });
 
-    return listenser;
+    return listener;
   },
 });
 
