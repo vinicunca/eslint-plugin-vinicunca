@@ -1,5 +1,5 @@
 import { expect } from 'vitest';
-import { RuleTester } from '../../vendor/rule-tester/src/RuleTester';
+import { ruleTester } from '../rule-tester';
 import rule, { RULE_NAME } from './consistent-list-newline';
 
 const valids = [
@@ -48,10 +48,6 @@ const invalid = [
   'foo<X,\nY>()',
   'function foo<\nX,Y>() {}',
 ] as const;
-
-const ruleTester: RuleTester = new RuleTester({
-  parser: require.resolve('@typescript-eslint/parser'),
-});
 
 ruleTester.run(RULE_NAME, rule as any, {
   valid: valids,

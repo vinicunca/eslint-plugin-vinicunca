@@ -1,4 +1,4 @@
-import { RuleTester } from '../../vendor/rule-tester/src/RuleTester';
+import { ruleTester } from '../rule-tester';
 import rule, { RULE_NAME } from './top-level-function';
 
 const valids = [
@@ -49,10 +49,6 @@ const invalids = [
     'export async function foo () {\n  return {}\n}',
   ],
 ];
-
-const ruleTester: RuleTester = new RuleTester({
-  parser: require.resolve('@typescript-eslint/parser'),
-});
 
 ruleTester.run(RULE_NAME, rule as any, {
   valid: valids,

@@ -1,4 +1,4 @@
-import { RuleTester } from '../../vendor/rule-tester/src/RuleTester';
+import { ruleTester } from '../rule-tester';
 import rule, { RULE_NAME } from './import-dedupe';
 
 const valids = [
@@ -10,10 +10,6 @@ const invalids = [
     'import { a, b,   c,  } from \'foo\'',
   ],
 ];
-
-const ruleTester: RuleTester = new RuleTester({
-  parser: require.resolve('@typescript-eslint/parser'),
-});
 
 ruleTester.run(RULE_NAME, rule as any, {
   valid: valids,

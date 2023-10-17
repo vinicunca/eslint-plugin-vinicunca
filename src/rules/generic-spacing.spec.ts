@@ -1,4 +1,4 @@
-import { RuleTester } from '../../vendor/rule-tester/src/RuleTester';
+import { ruleTester } from '../rule-tester';
 import rule, { RULE_NAME } from './generic-spacing';
 
 const valids = [
@@ -36,10 +36,6 @@ const invalids = [
   foo<T>(name: T): void
 }`],
 ] as const;
-
-const ruleTester: RuleTester = new RuleTester({
-  parser: require.resolve('@typescript-eslint/parser'),
-});
 
 ruleTester.run(RULE_NAME, rule as any, {
   valid: valids,

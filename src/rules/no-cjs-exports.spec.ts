@@ -1,4 +1,4 @@
-import { RuleTester } from '../../vendor/rule-tester/src/RuleTester';
+import { ruleTester } from '../rule-tester';
 import rule, { RULE_NAME } from './no-cjs-exports';
 
 const valids = [
@@ -11,10 +11,6 @@ const invalids = [
   { code: 'exports.a = {}', filename: 'test.ts' },
   { code: 'module.exports.a = {}', filename: 'test.ts' },
 ];
-
-const ruleTester: RuleTester = new RuleTester({
-  parser: require.resolve('@typescript-eslint/parser'),
-});
 
 ruleTester.run(RULE_NAME, rule as any, {
   valid: valids,
