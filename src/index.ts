@@ -6,6 +6,7 @@ import ifNewline from './rules/if-newline';
 import importDedupe from './rules/import-dedupe';
 import namedTupleSpacing from './rules/named-tuple-spacing';
 import noCjsExports from './rules/no-cjs-exports';
+import noIdenticalConditions from './rules/no-identical-conditions';
 import noIdenticalExpressions from './rules/no-identical-expressions';
 import noIdenticalFunctions from './rules/no-identical-functions';
 import noIgnoredReturn from './rules/no-ignored-return';
@@ -34,6 +35,7 @@ const plugin = {
     'import-dedupe': importDedupe,
     'named-tuple-spacing': namedTupleSpacing,
     'no-cjs-exports': noCjsExports,
+    'no-identical-conditions': noIdenticalConditions,
     'no-identical-expressions': noIdenticalExpressions,
     'no-identical-functions': noIdenticalFunctions,
     'no-ignored-return': noIgnoredReturn,
