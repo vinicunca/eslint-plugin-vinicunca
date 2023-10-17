@@ -1,5 +1,5 @@
 import { type TSESLint } from '@typescript-eslint/utils';
-import { ruleTester } from '../rule-tester';
+import { ruleTester } from '../tests/rule-tester';
 import rule, { RULE_NAME } from './no-use-of-empty-return-value';
 
 const FUNCTION_NO_RETURN = 'function noReturn() { }\n ';

@@ -1,4 +1,4 @@
-import { ruleTester } from '../rule-tester';
+import { ruleTester } from '../tests/rule-tester';
 import rule, { RULE_NAME } from './generic-spacing';
 
 const valids = [

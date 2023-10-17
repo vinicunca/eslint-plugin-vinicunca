@@ -1,4 +1,5 @@
 import { type TSESTree } from '@typescript-eslint/utils';
+import { type TypeServices } from './parser-service';
 
 export function isIfStatement(node: TSESTree.Node | undefined): node is TSESTree.IfStatement {
   return node !== undefined && node.type === 'IfStatement';
@@ -66,4 +67,9 @@ export function ancestorsChain(node: TSESTree.Node, boundaryTypes: Set<string>) 
     currentNode = currentNode.parent;
   }
   return chain;
+}
+
+export function getTypeFromTreeNode(node: TSESTree.Node, services: TypeServices) {
+  const checker = services.program.getTypeChecker();
+  return checker.getTypeAtLocation(services.esTreeNodeToTSNodeMap.get(node));
 }

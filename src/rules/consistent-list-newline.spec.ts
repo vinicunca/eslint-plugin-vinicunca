@@ -1,5 +1,5 @@
 import { expect } from 'vitest';
-import { ruleTester } from '../rule-tester';
+import { ruleTester } from '../tests/rule-tester';
 import rule, { RULE_NAME } from './consistent-list-newline';
 
 const valids = [

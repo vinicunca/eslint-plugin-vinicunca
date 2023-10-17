@@ -1,4 +1,4 @@
-import { ruleTester } from '../rule-tester';
+import { ruleTester } from '../tests/rule-tester';
 import rule, { RULE_NAME } from './prefer-immediate-return';
 
 ruleTester.run(RULE_NAME, rule as any, {

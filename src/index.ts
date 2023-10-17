@@ -6,6 +6,7 @@ import ifNewline from './rules/if-newline';
 import importDedupe from './rules/import-dedupe';
 import namedTupleSpacing from './rules/named-tuple-spacing';
 import noCjsExports from './rules/no-cjs-exports';
+import noIgnoredReturn from './rules/no-ignored-return';
 import noImportNodeModulesByPath from './rules/no-import-node-modules-by-path';
 import noNestedTemplateLiterals from './rules/no-nested-template-literals';
 import noRedundantBoolean from './rules/no-redundant-boolean';
@@ -31,6 +32,7 @@ const plugin = {
     'import-dedupe': importDedupe,
     'named-tuple-spacing': namedTupleSpacing,
     'no-cjs-exports': noCjsExports,
+    'no-ignored-return': noIgnoredReturn,
     'no-import-node-modules-by-path': noImportNodeModulesByPath,
     'no-nested-template-literals': noNestedTemplateLiterals,
     'no-redundant-boolean': noRedundantBoolean,

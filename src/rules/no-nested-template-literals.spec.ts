@@ -1,5 +1,5 @@
 /* eslint-disable no-template-curly-in-string */
-import { ruleTester } from '../rule-tester';
+import { ruleTester } from '../tests/rule-tester';
 import rule, { RULE_NAME } from './no-nested-template-literals';
 
 ruleTester.run(RULE_NAME, rule as any, {
