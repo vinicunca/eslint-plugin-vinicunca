@@ -7,6 +7,8 @@ import importDedupe from './rules/import-dedupe';
 import namedTupleSpacing from './rules/named-tuple-spacing';
 import noCjsExports from './rules/no-cjs-exports';
 import noImportNodeModulesByPath from './rules/no-import-node-modules-by-path';
+import noRedundantJump from './rules/no-redundant-jump';
+import noUnusedCollection from './rules/no-unused-collection';
 import noTsExportEqual from './rules/no-ts-export-equal';
 import noUseOfEmptyReturnValue from './rules/no-use-of-empty-return-value';
 import preferImmediateReturn from './rules/prefer-immediate-return';
@@ -28,6 +30,8 @@ const plugin = {
     'named-tuple-spacing': namedTupleSpacing,
     'no-cjs-exports': noCjsExports,
     'no-import-node-modules-by-path': noImportNodeModulesByPath,
+    'no-redundant-jump': noRedundantJump,
+    'no-unused-collection': noUnusedCollection,
     'no-ts-export-equal': noTsExportEqual,
     'no-use-of-empty-return-value': noUseOfEmptyReturnValue,
     'prefer-immediate-return': preferImmediateReturn,

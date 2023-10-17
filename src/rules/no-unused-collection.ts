@@ -1,23 +1,22 @@
-import { type TSESTree } from '@typescript-eslint/utils';
+import { type TSESLint, type TSESTree } from '@typescript-eslint/utils';
 import { createEslintRule } from '../utils/rule';
-import { isArrowFunctionExpression, isBlockStatement, isFunctionExpression } from '../utils/node';
+import { collectionConstructor, writingMethods } from '../utils/collection';
 
 export const RULE_NAME = 'no-unused-collection';
 export type Options = [];
-export type MessageIds = 'removeUseOfOutput';
+export type MessageIds = 'unusedCollection';
 
 export default createEslintRule<Options, MessageIds>({
   name: RULE_NAME,
 
   meta: {
     messages: {
-      removeUseOfOutput:
-        'Remove this use of the output from "{{name}}"; "{{name}}" doesn\'t return anything.',
+      unusedCollection: 'Either use this collection\'s contents or remove the collection.',
     },
     schema: [],
     type: 'problem',
     docs: {
-      description: 'The output of functions that don\'t return anything should not be used',
+      description: 'Collection and array contents should be used',
       recommended: 'recommended',
     },
   },
@@ -25,110 +24,184 @@ export default createEslintRule<Options, MessageIds>({
   defaultOptions: [],
 
   create: (context) => {
-    const callExpressionsToCheck: Map<
-    TSESTree.Identifier | TSESTree.JSXIdentifier,
-    TSESTree.FunctionLike
-    > = new Map();
-    const functionsWithReturnValue: Set<TSESTree.FunctionLike> = new Set();
-
     return {
-      CallExpression(node: TSESTree.Node) {
-        const callExpr = node as TSESTree.CallExpression;
-        if (!isReturnValueUsed(callExpr)) {
-          return;
-        }
-        const scope = context.getScope();
-        const reference = scope.references.find((ref) => ref.identifier === callExpr.callee);
-        if (reference && reference.resolved) {
-          const variable = reference.resolved;
-          if (variable.defs.length === 1) {
-            const definition = variable.defs[0];
-            if (definition.type === 'FunctionName') {
-              callExpressionsToCheck.set(reference.identifier, definition.node);
-            } else if (definition.type === 'Variable') {
-              const { init } = definition.node;
-              if (init && (isFunctionExpression(init) || isArrowFunctionExpression(init))) {
-                callExpressionsToCheck.set(reference.identifier, init);
-              }
-            }
-          }
-        }
-      },
+      'Program:exit': () => {
+        const unusedArrays: TSESLint.Scope.Variable[] = [];
+        collectUnusedCollections(context.getScope(), unusedArrays);
 
-      ReturnStatement(node: TSESTree.Node) {
-        const returnStmt = node as TSESTree.ReturnStatement;
-        if (returnStmt.argument) {
-          const ancestors = [...context.getAncestors()].reverse();
-          const functionNode = ancestors.find(
-            (node) => node.type === 'FunctionExpression'
-              || node.type === 'FunctionDeclaration'
-              || node.type === 'ArrowFunctionExpression',
-          );
-
-          functionsWithReturnValue.add(functionNode as TSESTree.FunctionLike);
-        }
-      },
-
-      ArrowFunctionExpression(node: TSESTree.Node) {
-        const arrowFunc = node as TSESTree.ArrowFunctionExpression;
-        if (arrowFunc.expression) {
-          functionsWithReturnValue.add(arrowFunc);
-        }
-      },
-
-      ':function': function(node: TSESTree.Node) {
-        const func = node as
-          | TSESTree.FunctionExpression
-          | TSESTree.FunctionDeclaration
-          | TSESTree.ArrowFunctionExpression;
-        if (
-          func.async
-          || func.generator
-          || (isBlockStatement(func.body) && func.body.body.length === 0)
-        ) {
-          functionsWithReturnValue.add(func);
-        }
-      },
-
-      'Program:exit': function() {
-        callExpressionsToCheck.forEach((functionDeclaration, callee) => {
-          if (!functionsWithReturnValue.has(functionDeclaration)) {
-            context.report({
-              messageId: 'removeUseOfOutput',
-              node: callee,
-              data: { name: callee.name },
-            });
-          }
+        unusedArrays.forEach((unusedArray) => {
+          context.report({
+            messageId: 'unusedCollection',
+            node: unusedArray.identifiers[0],
+          });
         });
       },
     };
   },
 });
 
-function isReturnValueUsed(callExpr: TSESTree.Node) {
-  const { parent } = callExpr;
-  if (!parent) {
+function collectUnusedCollections(
+  scope: TSESLint.Scope.Scope,
+  unusedArray: TSESLint.Scope.Variable[],
+) {
+  if (scope.type !== 'global') {
+    scope.variables.filter(isUnusedCollection).forEach((v) => {
+      unusedArray.push(v);
+    });
+  }
+
+  scope.childScopes.forEach((childScope) => {
+    collectUnusedCollections(childScope, unusedArray);
+  });
+}
+
+function isExported(variable: TSESLint.Scope.Variable) {
+  const definition = variable.defs[0];
+  return definition && definition.node.parent?.parent?.type.startsWith('Export');
+}
+
+function isUnusedCollection(variable: TSESLint.Scope.Variable) {
+  if (isExported(variable)) {
     return false;
   }
+  if (variable.references.length <= 1) {
+    return false;
+  }
+  let assignCollection = false;
 
-  if (parent.type === 'LogicalExpression') {
-    return parent.left === callExpr;
+  for (const ref of variable.references) {
+    if (ref.isWriteOnly()) {
+      if (isReferenceAssigningCollection(ref)) {
+        assignCollection = true;
+      } else {
+        // One assignment is not a collection, we don't go further
+        return false;
+      }
+    } else if (isRead(ref)) {
+      // Unfortunately, isRead (!isWrite) from Scope.Reference consider A[1] = 1; and A.xxx(); as a read operation, we need to filter further
+      return false;
+    }
+  }
+  return assignCollection;
+}
+
+function isReferenceAssigningCollection(ref: TSESLint.Scope.Reference) {
+  const declOrExprStmt = findFirstMatchingAncestor(
+    ref.identifier as TSESTree.Node,
+    (n) => n.type === 'VariableDeclarator' || n.type === 'ExpressionStatement',
+  ) as TSESTree.Node;
+  if (declOrExprStmt) {
+    if (declOrExprStmt.type === 'VariableDeclarator' && declOrExprStmt.init) {
+      return isCollectionType(declOrExprStmt.init);
+    }
+
+    if (declOrExprStmt.type === 'ExpressionStatement') {
+      const { expression } = declOrExprStmt;
+      return (
+        expression.type === 'AssignmentExpression'
+        && isReferenceTo(ref, expression.left)
+        && isCollectionType(expression.right)
+      );
+    }
+  }
+  return false;
+}
+
+function isCollectionType(node: TSESTree.Node) {
+  if (node && node.type === 'ArrayExpression') {
+    return true;
+  } else if (node && (node.type === 'CallExpression' || node.type === 'NewExpression')) {
+    return isIdentifier(node.callee, ...collectionConstructor);
+  }
+  return false;
+}
+
+function isRead(ref: TSESLint.Scope.Reference) {
+  const expressionStatement = findFirstMatchingAncestor(
+    ref.identifier as TSESTree.Node,
+    (n) => n.type === 'ExpressionStatement',
+  ) as TSESTree.ExpressionStatement;
+
+  if (expressionStatement) {
+    return !(
+      isElementWrite(expressionStatement, ref) || isWritingMethodCall(expressionStatement, ref)
+    );
   }
 
-  if (parent.type === 'SequenceExpression') {
-    return parent.expressions[parent.expressions.length - 1] === callExpr;
-  }
+  // All the write statement that we search are part of ExpressionStatement, if there is none, it's a read
+  return true;
+}
 
-  if (parent.type === 'ConditionalExpression') {
-    return parent.test === callExpr;
+/**
+ * Detect expression statements like the following:
+ * myArray.push(1);
+ */
+function isWritingMethodCall(
+  statement: TSESTree.ExpressionStatement,
+  ref: TSESLint.Scope.Reference,
+) {
+  if (statement.expression.type === 'CallExpression') {
+    const { callee } = statement.expression;
+    if (isMemberExpression(callee)) {
+      const { property } = callee;
+      return isReferenceTo(ref, callee.object) && isIdentifier(property, ...writingMethods);
+    }
   }
+  return false;
+}
 
+function isMemberExpression(node: TSESTree.Node): node is TSESTree.MemberExpression {
+  return node.type === 'MemberExpression';
+}
+
+/**
+ * Detect expression statements like the following:
+ *  myArray[1] = 42;
+ *  myArray[1] += 42;
+ *  myObj.prop1 = 3;
+ *  myObj.prop1 += 3;
+ */
+function isElementWrite(statement: TSESTree.ExpressionStatement, ref: TSESLint.Scope.Reference) {
+  if (statement.expression.type === 'AssignmentExpression') {
+    const assignmentExpression = statement.expression;
+    const lhs = assignmentExpression.left;
+    return isMemberExpressionReference(lhs, ref);
+  }
+  return false;
+}
+
+function isMemberExpressionReference(lhs: TSESTree.Node, ref: TSESLint.Scope.Reference): boolean {
   return (
-    parent.type !== 'ExpressionStatement'
-    && parent.type !== 'ArrowFunctionExpression'
-    && parent.type !== 'UnaryExpression'
-    && parent.type !== 'AwaitExpression'
-    && parent.type !== 'ReturnStatement'
-    && parent.type !== 'ThrowStatement'
+    lhs.type === 'MemberExpression'
+    && (isReferenceTo(ref, lhs.object) || isMemberExpressionReference(lhs.object, ref))
   );
+}
+
+function isIdentifier(node: TSESTree.Node, ...values: string[]): node is TSESTree.Identifier {
+  return node.type === 'Identifier' && values.includes(node.name);
+}
+
+function isReferenceTo(ref: TSESLint.Scope.Reference, node: TSESTree.Node) {
+  return node.type === 'Identifier' && node === ref.identifier;
+}
+
+function findFirstMatchingAncestor(
+  node: TSESTree.Node,
+  predicate: (node: TSESTree.Node) => boolean,
+) {
+  return ancestorsChain(node, new Set()).find(predicate);
+}
+
+function ancestorsChain(node: TSESTree.Node, boundaryTypes: Set<string>) {
+  const chain: TSESTree.Node[] = [];
+
+  let currentNode = node.parent;
+  while (currentNode) {
+    chain.push(currentNode);
+    if (boundaryTypes.has(currentNode.type)) {
+      break;
+    }
+    currentNode = currentNode.parent;
+  }
+  return chain;
 }
