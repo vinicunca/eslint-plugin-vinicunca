@@ -1,6 +1,6 @@
 import { type RuleFixer, type RuleListener } from '@typescript-eslint/utils/ts-eslint';
 import { type TSESTree } from '@typescript-eslint/utils';
-import { createEslintRule } from '../utils';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'consistent-list-newline';
 export type MessageIds = 'shouldWrap' | 'shouldNotWrap';

@@ -2,7 +2,7 @@
 // by Gajus Kuizinas https://github.com/gajus
 import { type TSESTree } from '@typescript-eslint/utils';
 import { type RuleFixer, type SourceCode } from '@typescript-eslint/utils/ts-eslint';
-import { createEslintRule } from '../utils';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'prefer-inline-type-import';
 export type MessageIds = 'preferInlineTypeImport';

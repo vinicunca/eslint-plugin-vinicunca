@@ -1,4 +1,4 @@
-import { createEslintRule } from '../utils';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'no-import-node-modules-by-path';
 export type MessageIds = 'noImportNodeModulesByPath';

@@ -1,15 +1,16 @@
 import { type ESLint, type Linter } from 'eslint';
 import { version } from '../package.json';
+import consistentListNewline from './rules/consistent-list-newline';
 import genericSpacing from './rules/generic-spacing';
 import ifNewline from './rules/if-newline';
 import importDedupe from './rules/import-dedupe';
-import preferInlineTypeImport from './rules/prefer-inline-type-import';
-import topLevelFunction from './rules/top-level-function';
+import namedTupleSpacing from './rules/named-tuple-spacing';
+import noCjsExports from './rules/no-cjs-exports';
 import noImportNodeModulesByPath from './rules/no-import-node-modules-by-path';
 import noTsExportEqual from './rules/no-ts-export-equal';
-import noCjsExports from './rules/no-cjs-exports';
-import namedTupleSpacing from './rules/named-tuple-spacing';
-import consistentListNewline from './rules/consistent-list-newline';
+import preferInlineTypeImport from './rules/prefer-inline-type-import';
+import preferSingleBooleanReturn from './rules/prefer-single-boolean-return';
+import topLevelFunction from './rules/top-level-function';
 
 const plugin = {
   meta: {
@@ -27,6 +28,7 @@ const plugin = {
     'no-import-node-modules-by-path': noImportNodeModulesByPath,
     'no-ts-export-equal': noTsExportEqual,
     'prefer-inline-type-import': preferInlineTypeImport,
+    'prefer-single-boolean-return': preferSingleBooleanReturn,
     'top-level-function': topLevelFunction,
   },
 } satisfies ESLint.Plugin;

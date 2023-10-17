@@ -1,4 +1,4 @@
-import { createEslintRule } from '../utils';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'generic-spacing';
 export type MessageIds = 'genericSpacingMismatch';
