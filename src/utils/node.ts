@@ -47,3 +47,9 @@ export function isArrowFunctionExpression(
 ): node is TSESTree.ArrowFunctionExpression {
   return node !== undefined && node.type === 'ArrowFunctionExpression';
 }
+
+export function isConditionalExpression(
+  node: TSESTree.Node | undefined,
+): node is TSESTree.ConditionalExpression {
+  return node !== undefined && node.type === 'ConditionalExpression';
+}
