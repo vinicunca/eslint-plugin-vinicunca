@@ -8,6 +8,7 @@ import namedTupleSpacing from './rules/named-tuple-spacing';
 import noCjsExports from './rules/no-cjs-exports';
 import noImportNodeModulesByPath from './rules/no-import-node-modules-by-path';
 import noTsExportEqual from './rules/no-ts-export-equal';
+import preferImmediateReturn from './rules/prefer-immediate-return';
 import preferInlineTypeImport from './rules/prefer-inline-type-import';
 import preferSingleBooleanReturn from './rules/prefer-single-boolean-return';
 import topLevelFunction from './rules/top-level-function';
@@ -27,6 +28,7 @@ const plugin = {
     'no-cjs-exports': noCjsExports,
     'no-import-node-modules-by-path': noImportNodeModulesByPath,
     'no-ts-export-equal': noTsExportEqual,
+    'prefer-immediate-return': preferImmediateReturn,
     'prefer-inline-type-import': preferInlineTypeImport,
     'prefer-single-boolean-return': preferSingleBooleanReturn,
     'top-level-function': topLevelFunction,

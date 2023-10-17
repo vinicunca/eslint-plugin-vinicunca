@@ -21,3 +21,17 @@ export function isReturnStatement(
 ): node is TSESTree.ReturnStatement {
   return node !== undefined && node.type === 'ReturnStatement';
 }
+
+export function isThrowStatement(node: TSESTree.Node | undefined): node is TSESTree.ThrowStatement {
+  return node !== undefined && node.type === 'ThrowStatement';
+}
+
+export function isIdentifier(node: TSESTree.Node | undefined): node is TSESTree.Identifier {
+  return node !== undefined && node.type === 'Identifier';
+}
+
+export function isVariableDeclaration(
+  node: TSESTree.Node | undefined,
+): node is TSESTree.VariableDeclaration {
+  return node !== undefined && node.type === 'VariableDeclaration';
+}
