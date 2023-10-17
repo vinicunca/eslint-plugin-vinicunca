@@ -19,27 +19,44 @@ export interface EncodedMessage {
 }
 
 /**
- * Converts `SourceLocation` range into `IssueLocation`
+ * Returns a location of the "main" function token:
+ * - function name for a function declaration, method or accessor
+ * - "function" keyword for a function expression
+ * - "=>" for an arrow function
  */
-export function issueLocation(
-  startLoc: TSESTree.SourceLocation,
-  endLoc: TSESTree.SourceLocation = startLoc,
-  message = '',
-  data: Record<string, unknown> = {},
-): IssueLocation {
-  const issueLocation: IssueLocation = {
-    line: startLoc.start.line,
-    column: startLoc.start.column,
-    endLine: endLoc.end.line,
-    endColumn: endLoc.end.column,
-    message,
-  };
+export function getMainFunctionTokenLocation<T = string>(
+  fn: TSESTree.FunctionLike,
+  parent: TSESTree.Node | undefined,
+  context: TSESLint.RuleContext<string, T[]>,
+) {
+  let location: TSESTree.SourceLocation | null | undefined;
 
-  if (data !== undefined && Object.keys(data).length > 0) {
-    issueLocation.data = data;
+  if (fn.type === 'FunctionDeclaration') {
+    // `fn.id` can be null when it is `export default function` (despite of the @types/TSESTree definition)
+    if (fn.id) {
+      location = fn.id.loc;
+    } else {
+      const token = getTokenByValue(fn, 'function', context);
+      location = token && token.loc;
+    }
+  } else if (fn.type === 'FunctionExpression') {
+    if (parent && (parent.type === 'MethodDefinition' || parent.type === 'Property')) {
+      location = parent.key.loc;
+    } else {
+      const token = getTokenByValue(fn, 'function', context);
+      location = token && token.loc;
+    }
+  } else if (fn.type === 'ArrowFunctionExpression') {
+    const token = context
+      .getSourceCode()
+      .getTokensBefore(fn.body)
+      .reverse()
+      .find((token) => token.value === '=>');
+
+    location = token && token.loc;
   }
 
-  return issueLocation;
+  return location!;
 }
 
 /**
@@ -92,44 +109,41 @@ function replaceAll(target: string, search: string, replacement: string): string
 }
 
 /**
- * Returns a location of the "main" function token:
- * - function name for a function declaration, method or accessor
- * - "function" keyword for a function expression
- * - "=>" for an arrow function
+ * Converts `SourceLocation` range into `IssueLocation`
  */
-export function getMainFunctionTokenLocation<T = string>(
-  fn: TSESTree.FunctionLike,
-  parent: TSESTree.Node | undefined,
-  context: TSESLint.RuleContext<string, T[]>,
-) {
-  let location: TSESTree.SourceLocation | null | undefined;
+export function issueLocation(
+  startLoc: TSESTree.SourceLocation,
+  endLoc: TSESTree.SourceLocation = startLoc,
+  message = '',
+  data: Record<string, unknown> = {},
+): IssueLocation {
+  const issueLocation: IssueLocation = {
+    line: startLoc.start.line,
+    column: startLoc.start.column,
+    endLine: endLoc.end.line,
+    endColumn: endLoc.end.column,
+    message,
+  };
 
-  if (fn.type === 'FunctionDeclaration') {
-    // `fn.id` can be null when it is `export default function` (despite of the @types/TSESTree definition)
-    if (fn.id) {
-      location = fn.id.loc;
-    } else {
-      const token = getTokenByValue(fn, 'function', context);
-      location = token && token.loc;
-    }
-  } else if (fn.type === 'FunctionExpression') {
-    if (parent && (parent.type === 'MethodDefinition' || parent.type === 'Property')) {
-      location = parent.key.loc;
-    } else {
-      const token = getTokenByValue(fn, 'function', context);
-      location = token && token.loc;
-    }
-  } else if (fn.type === 'ArrowFunctionExpression') {
-    const token = context
-      .getSourceCode()
-      .getTokensBefore(fn.body)
-      .reverse()
-      .find((token) => token.value === '=>');
-
-    location = token && token.loc;
+  if (data !== undefined && Object.keys(data).length > 0) {
+    issueLocation.data = data;
   }
 
-  return location!;
+  return issueLocation;
+}
+
+export function toSecondaryLocation(
+  locationHolder: TSESLint.AST.Token | TSESTree.Node,
+  message?: string,
+): IssueLocation {
+  const { loc } = locationHolder;
+  return {
+    message,
+    column: loc.start.column,
+    line: loc.start.line,
+    endColumn: loc.end.column,
+    endLine: loc.end.line,
+  };
 }
 
 function getTokenByValue<T = string>(
@@ -141,4 +155,18 @@ function getTokenByValue<T = string>(
     .getSourceCode()
     .getTokens(node)
     .find((token) => token.value === value);
+}
+
+export function getFirstTokenAfter<T = string>(
+  node: TSESTree.Node,
+  context: TSESLint.RuleContext<string, T[]>,
+): TSESLint.AST.Token | null {
+  return context.getSourceCode().getTokenAfter(node);
+}
+
+export function getFirstToken<T = string>(
+  node: TSESTree.Node,
+  context: TSESLint.RuleContext<string, T[]>,
+): TSESLint.AST.Token {
+  return context.getSourceCode().getTokens(node)[0];
 }

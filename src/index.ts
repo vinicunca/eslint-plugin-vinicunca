@@ -1,11 +1,13 @@
 import { type ESLint, type Linter } from 'eslint';
 import { version } from '../package.json';
 import consistentListNewline from './rules/consistent-list-newline';
+import cognitiveComplexity from './rules/cognitive-complexity';
 import genericSpacing from './rules/generic-spacing';
 import ifNewline from './rules/if-newline';
 import importDedupe from './rules/import-dedupe';
 import namedTupleSpacing from './rules/named-tuple-spacing';
 import noCjsExports from './rules/no-cjs-exports';
+import noEmptyCollection from './rules/no-empty-collection';
 import noIdenticalConditions from './rules/no-identical-conditions';
 import noIdenticalExpressions from './rules/no-identical-expressions';
 import noIdenticalFunctions from './rules/no-identical-functions';
@@ -30,11 +32,13 @@ const plugin = {
 
   rules: {
     'consistent-list-newline': consistentListNewline,
+    'cognitive-complexity': cognitiveComplexity,
     'generic-spacing': genericSpacing,
     'if-newline': ifNewline,
     'import-dedupe': importDedupe,
     'named-tuple-spacing': namedTupleSpacing,
     'no-cjs-exports': noCjsExports,
+    'no-empty-collection': noEmptyCollection,
     'no-identical-conditions': noIdenticalConditions,
     'no-identical-expressions': noIdenticalExpressions,
     'no-identical-functions': noIdenticalFunctions,
