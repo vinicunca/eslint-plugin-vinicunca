@@ -1,6 +1,5 @@
 import path from 'node:path';
 
-// import { ruleTester } from '../tests/rule-tester';
 import { RuleTester } from '../../vendor/rule-tester/src/RuleTester';
 import rule, { RULE_NAME } from './no-ignored-return';
 
