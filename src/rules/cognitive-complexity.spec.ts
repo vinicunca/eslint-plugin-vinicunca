@@ -606,7 +606,7 @@ ruleTester.run(RULE_NAME, rule as any, {
   ],
 });
 
-ruleTester.run('cognitive-complexity 15', rule as any, {
+ruleTester.run(`${RULE_NAME} 15`, rule as any, {
   valid: [
     {
       code: `
