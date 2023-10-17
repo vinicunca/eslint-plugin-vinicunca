@@ -6,7 +6,9 @@ import genericSpacing from './rules/generic-spacing';
 import ifNewline from './rules/if-newline';
 import importDedupe from './rules/import-dedupe';
 import namedTupleSpacing from './rules/named-tuple-spacing';
+import noAllDuplicatedBranches from './rules/no-all-duplicated-branches';
 import noCjsExports from './rules/no-cjs-exports';
+import noCollapsibleIf from './rules/no-collapsible-if';
 import noEmptyCollection from './rules/no-empty-collection';
 import noIdenticalConditions from './rules/no-identical-conditions';
 import noIdenticalExpressions from './rules/no-identical-expressions';
@@ -37,6 +39,8 @@ const plugin = {
     'if-newline': ifNewline,
     'import-dedupe': importDedupe,
     'named-tuple-spacing': namedTupleSpacing,
+    'no-all-duplicated-branches': noAllDuplicatedBranches,
+    'no-collapsible-if': noCollapsibleIf,
     'no-cjs-exports': noCjsExports,
     'no-empty-collection': noEmptyCollection,
     'no-identical-conditions': noIdenticalConditions,
