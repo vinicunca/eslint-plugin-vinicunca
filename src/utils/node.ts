@@ -53,3 +53,17 @@ export function isConditionalExpression(
 ): node is TSESTree.ConditionalExpression {
   return node !== undefined && node.type === 'ConditionalExpression';
 }
+
+export function ancestorsChain(node: TSESTree.Node, boundaryTypes: Set<string>) {
+  const chain: TSESTree.Node[] = [];
+
+  let currentNode = node.parent;
+  while (currentNode) {
+    chain.push(currentNode);
+    if (boundaryTypes.has(currentNode.type)) {
+      break;
+    }
+    currentNode = currentNode.parent;
+  }
+  return chain;
+}

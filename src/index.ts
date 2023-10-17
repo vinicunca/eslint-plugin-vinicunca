@@ -7,6 +7,7 @@ import importDedupe from './rules/import-dedupe';
 import namedTupleSpacing from './rules/named-tuple-spacing';
 import noCjsExports from './rules/no-cjs-exports';
 import noImportNodeModulesByPath from './rules/no-import-node-modules-by-path';
+import noNestedTemplateLiterals from './rules/no-nested-template-literals';
 import noRedundantBoolean from './rules/no-redundant-boolean';
 import noRedundantJump from './rules/no-redundant-jump';
 import noUnusedCollection from './rules/no-unused-collection';
@@ -31,6 +32,7 @@ const plugin = {
     'named-tuple-spacing': namedTupleSpacing,
     'no-cjs-exports': noCjsExports,
     'no-import-node-modules-by-path': noImportNodeModulesByPath,
+    'no-nested-template-literals': noNestedTemplateLiterals,
     'no-redundant-boolean': noRedundantBoolean,
     'no-redundant-jump': noRedundantJump,
     'no-unused-collection': noUnusedCollection,
