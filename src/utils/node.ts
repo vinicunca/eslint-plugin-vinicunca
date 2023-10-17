@@ -35,3 +35,15 @@ export function isVariableDeclaration(
 ): node is TSESTree.VariableDeclaration {
   return node !== undefined && node.type === 'VariableDeclaration';
 }
+
+export function isFunctionExpression(
+  node: TSESTree.Node | undefined,
+): node is TSESTree.FunctionExpression {
+  return node !== undefined && node.type === 'FunctionExpression';
+}
+
+export function isArrowFunctionExpression(
+  node: TSESTree.Node | undefined,
+): node is TSESTree.ArrowFunctionExpression {
+  return node !== undefined && node.type === 'ArrowFunctionExpression';
+}
