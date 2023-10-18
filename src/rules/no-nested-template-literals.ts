@@ -1,6 +1,6 @@
 import { type TSESTree } from '@typescript-eslint/utils';
 import { createEslintRule } from '../utils/rule';
-import { ancestorsChain } from '../utils/node';
+import { ancestorsChain } from '../utils';
 
 export const RULE_NAME = 'no-nested-template-literals';
 export type MessageIds = 'nestedTemplateLiterals';

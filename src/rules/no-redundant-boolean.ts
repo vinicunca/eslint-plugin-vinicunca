@@ -1,6 +1,6 @@
 import { type TSESTree } from '@typescript-eslint/utils';
 import { createEslintRule } from '../utils/rule';
-import { isBooleanLiteral, isConditionalExpression, isIfStatement } from '../utils/node';
+import { isBooleanLiteral, isConditionalExpression, isIfStatement } from '../utils/nodes';
 
 export const RULE_NAME = 'no-redundant-boolean';
 export type Options = [];

@@ -1,8 +1,7 @@
 import { type TSESLint, type TSESTree } from '@typescript-eslint/utils';
 import { createEslintRule } from '../utils/rule';
-import { type TypeServices } from '../utils/parser-service';
-import { hasTypeServices } from '../utils/parser-service';
-import { getTypeFromTreeNode } from '../utils/node';
+import { type TypeServices, hasTypeServices } from '../utils/parser-services';
+import { getTypeFromTreeNode } from '../utils';
 
 export const RULE_NAME = 'no-ignored-return';
 export type MessageIds = 'useForEach' | 'returnValueMustBeUsed';

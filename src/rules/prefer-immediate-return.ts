@@ -1,6 +1,6 @@
 import { type TSESLint, type TSESTree } from '@typescript-eslint/utils';
 import { createEslintRule } from '../utils/rule';
-import { isIdentifier, isReturnStatement, isThrowStatement, isVariableDeclaration } from '../utils/node';
+import { isIdentifier, isReturnStatement, isThrowStatement, isVariableDeclaration } from '../utils/nodes';
 
 export const RULE_NAME = 'prefer-immediate-return';
 export type Options = [];

@@ -3,11 +3,11 @@ import { createEslintRule } from '../utils/rule';
 import { areEquivalent } from '../utils/equivalence';
 import { type IssueLocation } from '../utils/locations';
 import { issueLocation, report } from '../utils/locations';
-import { isIdentifier, isLiteral } from '../utils/node';
+import { isIdentifier, isLiteral } from '../utils/nodes';
 
 export const RULE_NAME = 'no-identical-expressions';
 export type MessageIds = 'correctIdenticalSubExpressions' | 'vinicuncaRuntime';
-type Options = (number | 'vinicunca-runtime')[];
+type Options = [];
 
 const EQUALITY_OPERATOR_TOKEN_KINDS = new Set(['==', '===', '!=', '!==']);
 

@@ -1,6 +1,6 @@
 import { type TSESLint, type TSESTree } from '@typescript-eslint/utils';
 import { createEslintRule } from '../utils/rule';
-import { collectionConstructor, writingMethods } from '../utils/collection';
+import { collectionConstructor, writingMethods } from '../utils/collections';
 
 export const RULE_NAME = 'no-unused-collection';
 export type Options = [];

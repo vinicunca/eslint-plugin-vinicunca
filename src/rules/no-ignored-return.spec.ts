@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import { RuleTester } from '../../vendor/rule-tester/src/RuleTester';
+import { RuleTester } from '@typescript-eslint/rule-tester';
 import rule, { RULE_NAME } from './no-ignored-return';
 
 const filename = path.resolve(__dirname, '..', 'tests', 'resources', 'file.ts');

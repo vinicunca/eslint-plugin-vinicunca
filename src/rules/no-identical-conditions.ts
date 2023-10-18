@@ -5,7 +5,7 @@ import { issueLocation, report } from '../utils/locations';
 
 export const RULE_NAME = 'no-identical-conditions';
 export type MessageIds = 'duplicatedCondition' | 'duplicatedCase' | 'vinicuncaRuntime';
-type Options = (number | 'vinicunca-runtime')[];
+type Options = [];
 
 const duplicatedConditionMessage = 'This condition is covered by the one on line {{line}}';
 const duplicatedCaseMessage = 'This case duplicates the one on line {{line}}';

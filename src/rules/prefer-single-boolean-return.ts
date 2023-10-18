@@ -1,6 +1,6 @@
 import { type TSESLint, type TSESTree } from '@typescript-eslint/utils';
 import { createEslintRule } from '../utils/rule';
-import { isBlockStatement, isBooleanLiteral, isIfStatement, isReturnStatement } from '../utils/node';
+import { isBlockStatement, isBooleanLiteral, isIfStatement, isReturnStatement } from '../utils/nodes';
 
 export const RULE_NAME = 'prefer-single-boolean-return';
 export type Options = [];

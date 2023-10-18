@@ -7,6 +7,7 @@ const PRESERVE_PREFIX_SPACE_BEFORE_GENERIC = new Set(['TSCallSignatureDeclaratio
 
 export default createEslintRule<Options, MessageIds>({
   name: RULE_NAME,
+
   meta: {
     type: 'layout',
     docs: {
@@ -19,7 +20,9 @@ export default createEslintRule<Options, MessageIds>({
       genericSpacingMismatch: 'Generic spaces mismatch',
     },
   },
+
   defaultOptions: [],
+
   create: (context) => {
     const sourceCode = context.getSourceCode();
     return {

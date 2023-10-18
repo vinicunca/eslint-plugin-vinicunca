@@ -1,6 +1,6 @@
 import { type TSESTree } from '@typescript-eslint/utils';
 import { createEslintRule } from '../utils/rule';
-import { isArrowFunctionExpression, isBlockStatement, isFunctionExpression } from '../utils/node';
+import { isArrowFunctionExpression, isBlockStatement, isFunctionExpression } from '../utils/nodes';
 
 export const RULE_NAME = 'no-use-of-empty-return-value';
 export type Options = [];
