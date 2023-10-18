@@ -46,25 +46,23 @@
     "eslint": "*"
   },
   "dependencies": {
-    "@typescript-eslint/utils": "^6.7.5"
+    "@typescript-eslint/utils": "^6.8.0"
   },
   "devDependencies": {
-    "@types/eslint": "^8.44.3",
+    "@types/eslint": "^8.44.5",
     "@types/lodash.merge": "^4.6.7",
-    "@types/node": "^20.7.1",
+    "@types/node": "^20.8.6",
     "@types/semver": "^7.5.3",
-    "@typescript-eslint/rule-tester": "^6.7.5",
-    "@typescript-eslint/typescript-estree": "^6.7.5",
-    "@typescript-eslint/utils": "^6.7.5",
-    "@vinicunca/eslint-config": "2.0.0-beta.7",
+    "@typescript-eslint/rule-tester": "^6.8.0",
+    "@typescript-eslint/typescript-estree": "^6.8.0",
+    "@typescript-eslint/utils": "^6.8.0",
+    "@vinicunca/eslint-config": "2.0.0-beta.9",
     "ajv": "^6.10.0",
     "bumpp": "^9.2.0",
     "eslint": "^8.51.0",
-    "eslint-define-config": "^1.23.0",
     "lodash.merge": "4.6.2",
     "rimraf": "^5.0.5",
     "semver": "^7.5.4",
-    "tsx": "^3.12.10",
     "typescript": "^5.2.2",
     "unbuild": "^2.0.0",
     "vitest": "^0.34.6"
