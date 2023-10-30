@@ -42,9 +42,6 @@
     "release": "bumpp package.json --commit --push --tag --commit 'chore: release v'",
     "test": "vitest"
   },
-  "peerDependencies": {
-    "eslint": ">=8.51.0"
-  },
   "devDependencies": {
     "@types/eslint": "^8.44.6",
     "@types/node": "^20.8.9",
