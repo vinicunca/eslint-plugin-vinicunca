@@ -2,6 +2,52 @@ import { ruleTester } from '../tests/rule-tester';
 import rule, { RULE_NAME } from './no-all-duplicated-branches';
 
 ruleTester.run(`${RULE_NAME} if`, rule as any, {
+  invalid: [
+    {
+      code: 'if (a) { first(); } else { first(); }',
+      errors: [
+        {
+          column: 1,
+          endColumn: 38,
+          line: 1,
+          messageId: 'removeOrEditConditionalStructure',
+        },
+      ],
+    },
+    {
+      code: 'if (a) { first(); } else if (b) { first(); } else { first(); }',
+      errors: [
+        {
+          column: 1,
+          endColumn: 63,
+          line: 1,
+          messageId: 'removeOrEditConditionalStructure',
+        },
+      ],
+    },
+    {
+      code: 'if (a) { first(); second(); } else { first(); second(); }',
+      errors: [
+        {
+          column: 1,
+          endColumn: 58,
+          line: 1,
+          messageId: 'removeOrEditConditionalStructure',
+        },
+      ],
+    },
+    {
+      code: 'if (a) { first(); second(); } else if (b) { first(); second(); } else { first(); second(); }',
+      errors: [
+        {
+          column: 1,
+          endColumn: 93,
+          line: 1,
+          messageId: 'removeOrEditConditionalStructure',
+        },
+      ],
+    },
+  ],
   valid: [
     { code: 'if (a) { first(\'const\'); } else { first(\'var\'); }' },
     { code: 'if (a) { first(); } else { second(); }' },
@@ -28,55 +74,105 @@ ruleTester.run(`${RULE_NAME} if`, rule as any, {
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   ],
+});
+
+ruleTester.run(`${RULE_NAME} switch`, rule as any, {
   invalid: [
     {
-      code: 'if (a) { first(); } else { first(); }',
+      code: `
+      switch (a) {
+        case 1:
+          first();
+          second();
+          break;
+        default:
+          first();
+          second();
+      }`,
       errors: [
         {
+          column: 7,
+          endColumn: 8,
+          endLine: 10,
+          line: 2,
           messageId: 'removeOrEditConditionalStructure',
-          line: 1,
-          column: 1,
-          endColumn: 38,
         },
       ],
     },
     {
-      code: 'if (a) { first(); } else if (b) { first(); } else { first(); }',
+      code: `
+      switch (a) {
+        case 1:
+          first();
+          second();
+          break;
+        case 2:
+          first();
+          second();
+          break;
+        default:
+          first();
+          second();
+      }`,
       errors: [
         {
+          column: 7,
+          endColumn: 8,
+          endLine: 14,
+          line: 2,
           messageId: 'removeOrEditConditionalStructure',
-          line: 1,
-          column: 1,
-          endColumn: 63,
         },
       ],
     },
     {
-      code: 'if (a) { first(); second(); } else { first(); second(); }',
+      code: `
+      switch (a) {
+        case 1:
+          first();
+          break;
+        case 2:
+          first();
+          break;
+        default:
+          first();
+      }`,
       errors: [
         {
+          column: 7,
+          endColumn: 8,
+          endLine: 11,
+          line: 2,
           messageId: 'removeOrEditConditionalStructure',
-          line: 1,
-          column: 1,
-          endColumn: 58,
         },
       ],
     },
     {
-      code: 'if (a) { first(); second(); } else if (b) { first(); second(); } else { first(); second(); }',
+      code: `
+      switch (a) {
+        case 1:
+        case 2:
+          first();
+          second();
+          break;
+        case 3:
+          first();
+          second();
+          break;
+        default:
+          first();
+          second();
+      }`,
       errors: [
         {
+          column: 7,
+          endColumn: 8,
+          endLine: 15,
+          line: 2,
           messageId: 'removeOrEditConditionalStructure',
-          line: 1,
-          column: 1,
-          endColumn: 93,
         },
       ],
     },
   ],
-});
-
-ruleTester.run(`${RULE_NAME} switch`, rule as any, {
   valid: [
     {
       // Ok, no default
@@ -122,117 +218,21 @@ ruleTester.run(`${RULE_NAME} switch`, rule as any, {
       }`,
     },
   ],
-  invalid: [
-    {
-      code: `
-      switch (a) {
-        case 1:
-          first();
-          second();
-          break;
-        default:
-          first();
-          second();
-      }`,
-      errors: [
-        {
-          messageId: 'removeOrEditConditionalStructure',
-          line: 2,
-          endLine: 10,
-          column: 7,
-          endColumn: 8,
-        },
-      ],
-    },
-    {
-      code: `
-      switch (a) {
-        case 1:
-          first();
-          second();
-          break;
-        case 2:
-          first();
-          second();
-          break;
-        default:
-          first();
-          second();
-      }`,
-      errors: [
-        {
-          messageId: 'removeOrEditConditionalStructure',
-          line: 2,
-          endLine: 14,
-          column: 7,
-          endColumn: 8,
-        },
-      ],
-    },
-    {
-      code: `
-      switch (a) {
-        case 1:
-          first();
-          break;
-        case 2:
-          first();
-          break;
-        default:
-          first();
-      }`,
-      errors: [
-        {
-          messageId: 'removeOrEditConditionalStructure',
-          line: 2,
-          endLine: 11,
-          column: 7,
-          endColumn: 8,
-        },
-      ],
-    },
-    {
-      code: `
-      switch (a) {
-        case 1:
-        case 2:
-          first();
-          second();
-          break;
-        case 3:
-          first();
-          second();
-          break;
-        default:
-          first();
-          second();
-      }`,
-      errors: [
-        {
-          messageId: 'removeOrEditConditionalStructure',
-          line: 2,
-          endLine: 15,
-          column: 7,
-          endColumn: 8,
-        },
-      ],
-    },
-  ],
 });
 
 ruleTester.run(`${RULE_NAME} conditional`, rule as any, {
-  valid: [{ code: 'a ? first : second;' }],
   invalid: [
     {
       code: 'a ? first : first;',
       errors: [
         {
-          messageId: 'returnsTheSameValue',
-          line: 1,
           column: 1,
           endColumn: 18,
+          line: 1,
+          messageId: 'returnsTheSameValue',
         },
       ],
     },
   ],
+  valid: [{ code: 'a ? first : second;' }],
 });

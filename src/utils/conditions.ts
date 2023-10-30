@@ -1,4 +1,5 @@
-import { type TSESTree } from '@typescript-eslint/utils';
+import type { TSESTree } from '@typescript-eslint/utils';
+
 import { isIfStatement } from './nodes';
 
 /** Returns a list of statements corresponding to a `if - else if - else` chain */

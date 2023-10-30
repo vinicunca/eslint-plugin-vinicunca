@@ -1,45 +1,24 @@
-import { type TSESTree } from '@typescript-eslint/utils';
-import { createEslintRule } from '../utils/rule';
+import type { TSESTree } from '@typescript-eslint/utils';
+
 import { areEquivalent } from '../utils/equivalence';
 import { getMainFunctionTokenLocation, issueLocation, report } from '../utils/locations';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'no-identical-functions';
 export type MessageIds = 'identicalFunctions' | 'vinicuncaRuntime';
-type Options = (number | 'vinicunca-runtime')[];
+type Options = ('vinicunca-runtime' | number)[];
 
 const DEFAULT_MIN_LINES = 3;
 
 type FunctionNode =
+  | TSESTree.ArrowFunctionExpression
   | TSESTree.FunctionDeclaration
-  | TSESTree.FunctionExpression
-  | TSESTree.ArrowFunctionExpression;
+  | TSESTree.FunctionExpression;
 
 const message
   = 'Update this function so that its implementation is not identical to the one on line {{line}}.';
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    messages: {
-      identicalFunctions: message,
-      vinicuncaRuntime: '{{vinicuncaRuntimeData}}',
-    },
-    type: 'problem',
-    docs: {
-      description: 'Functions should not have identical implementations',
-      recommended: 'recommended',
-    },
-    schema: [
-      { type: 'integer', minimum: 3 },
-      {
-        enum: ['vinicunca-runtime'],
-      } as any,
-    ],
-  },
-
-  defaultOptions: [],
-
   create(context) {
     const functions: Array<{ function: FunctionNode; parent: TSESTree.Node | undefined }> = [];
     const minLines: number
@@ -49,10 +28,8 @@ export default createEslintRule<Options, MessageIds>({
       FunctionDeclaration(node: TSESTree.Node) {
         visitFunction(node as TSESTree.FunctionDeclaration);
       },
-      'VariableDeclarator > FunctionExpression, MethodDefinition > FunctionExpression': (
-        node: TSESTree.Node,
-      ) => {
-        visitFunction(node as TSESTree.FunctionExpression);
+      'Program:exit': function() {
+        processFunctions();
       },
       'VariableDeclarator > ArrowFunctionExpression, MethodDefinition > ArrowFunctionExpression': (
         node: TSESTree.Node,
@@ -60,8 +37,10 @@ export default createEslintRule<Options, MessageIds>({
         visitFunction(node as TSESTree.ArrowFunctionExpression);
       },
 
-      'Program:exit': function() {
-        processFunctions();
+      'VariableDeclarator > FunctionExpression, MethodDefinition > FunctionExpression': (
+        node: TSESTree.Node,
+      ) => {
+        visitFunction(node as TSESTree.FunctionExpression);
       },
     };
 
@@ -102,11 +81,11 @@ export default createEslintRule<Options, MessageIds>({
             report(
               context,
               {
-                messageId: 'identicalFunctions',
                 data: {
                   line: originalFunction.loc.start.line,
                 },
                 loc,
+                messageId: 'identicalFunctions',
               },
               secondaryLocations,
               message,
@@ -138,4 +117,26 @@ export default createEslintRule<Options, MessageIds>({
       return false;
     }
   },
+
+  defaultOptions: [],
+
+  meta: {
+    docs: {
+      description: 'Functions should not have identical implementations',
+      recommended: 'recommended',
+    },
+    messages: {
+      identicalFunctions: message,
+      vinicuncaRuntime: '{{vinicuncaRuntimeData}}',
+    },
+    schema: [
+      { minimum: 3, type: 'integer' },
+      {
+        enum: ['vinicunca-runtime'],
+      } as any,
+    ],
+    type: 'problem',
+  },
+
+  name: RULE_NAME,
 });

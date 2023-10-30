@@ -1,9 +1,10 @@
-import { type TSESTree } from '@typescript-eslint/utils';
-import { createEslintRule } from '../utils/rule';
-import { isBlockStatement, isIfStatement } from '../utils/nodes';
-import { areEquivalent } from '../utils/equivalence';
+import type { TSESTree } from '@typescript-eslint/utils';
+
 import { collectIfBranches, collectSwitchBranches, takeWithoutBreak } from '../utils/conditions';
+import { areEquivalent } from '../utils/equivalence';
 import { issueLocation, report } from '../utils/locations';
+import { isBlockStatement, isIfStatement } from '../utils/nodes';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'no-duplicated-branches';
 export type MessageIds = 'sameConditionalBlock' | 'vinicuncaRuntime';
@@ -13,29 +14,6 @@ const message
   = 'This {{type}}\'s code block is the same as the block for the {{type}} on line {{line}}.';
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    messages: {
-      sameConditionalBlock: message,
-      vinicuncaRuntime: '{{vinicuncaRuntimeData}}',
-    },
-    type: 'problem',
-    docs: {
-      description:
-        'Two branches in a conditional structure should not have exactly the same implementation',
-      recommended: 'recommended',
-    },
-    schema: [
-      {
-        // internal parameter
-        enum: ['vinicunca-runtime'],
-      } as any,
-    ],
-  },
-
-  defaultOptions: [],
-
   create(context) {
     return {
       IfStatement(node: TSESTree.Node) {
@@ -162,8 +140,8 @@ export default createEslintRule<Options, MessageIds>({
       report(
         context,
         {
+          data: { line: String(equivalentNode.loc.start.line), type },
           messageId: 'sameConditionalBlock',
-          data: { type, line: String(equivalentNode.loc.start.line) },
           node,
         },
         [issueLocation(equivalentNodeLoc, equivalentNodeLoc, 'Original')],
@@ -171,5 +149,28 @@ export default createEslintRule<Options, MessageIds>({
       );
     }
   },
+
+  defaultOptions: [],
+
+  meta: {
+    docs: {
+      description:
+        'Two branches in a conditional structure should not have exactly the same implementation',
+      recommended: 'recommended',
+    },
+    messages: {
+      sameConditionalBlock: message,
+      vinicuncaRuntime: '{{vinicuncaRuntimeData}}',
+    },
+    schema: [
+      {
+        // internal parameter
+        enum: ['vinicunca-runtime'],
+      } as any,
+    ],
+    type: 'problem',
+  },
+
+  name: RULE_NAME,
 });
 

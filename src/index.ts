@@ -1,6 +1,6 @@
-import { type ESLint, type Linter } from 'eslint';
-import { version } from '../package.json';
+import type { ESLint, Linter } from 'eslint';
 
+import { version } from '../package.json';
 import cognitiveComplexity from './rules/cognitive-complexity';
 import consistentListNewline from './rules/consistent-list-newline';
 import genericSpacing from './rules/generic-spacing';
@@ -30,6 +30,30 @@ import preferSingleBooleanReturn from './rules/prefer-single-boolean-return';
 import topLevelFunction from './rules/top-level-function';
 
 const plugin = {
+  configs: {
+    recommended: {
+      rules: {
+        'vinicunca/cognitive-complexity': 'error',
+        'vinicunca/no-all-duplicated-branches': 'error',
+        'vinicunca/no-collapsible-if': 'error',
+        'vinicunca/no-duplicate-string': 'error',
+        'vinicunca/no-duplicated-branches': 'error',
+        'vinicunca/no-empty-collection': 'error',
+        'vinicunca/no-identical-conditions': 'error',
+        'vinicunca/no-identical-expressions': 'error',
+        'vinicunca/no-identical-functions': 'error',
+        'vinicunca/no-ignored-return': 'error',
+        'vinicunca/no-nested-template-literals': 'error',
+        'vinicunca/no-redundant-boolean': 'error',
+        'vinicunca/no-redundant-jump': 'error',
+        'vinicunca/no-unused-collection': 'error',
+        'vinicunca/no-use-of-empty-return-value': 'error',
+        'vinicunca/prefer-immediate-return': 'error',
+        'vinicunca/prefer-single-boolean-return': 'error',
+      },
+    },
+  },
+
   meta: {
     name: 'vinicunca',
     version,
@@ -63,30 +87,6 @@ const plugin = {
     'prefer-inline-type-import': preferInlineTypeImport,
     'prefer-single-boolean-return': preferSingleBooleanReturn,
     'top-level-function': topLevelFunction,
-  },
-
-  configs: {
-    recommended: {
-      rules: {
-        'vinicunca/cognitive-complexity': 'error',
-        'vinicunca/no-all-duplicated-branches': 'error',
-        'vinicunca/no-collapsible-if': 'error',
-        'vinicunca/no-duplicate-string': 'error',
-        'vinicunca/no-duplicated-branches': 'error',
-        'vinicunca/no-empty-collection': 'error',
-        'vinicunca/no-identical-conditions': 'error',
-        'vinicunca/no-identical-expressions': 'error',
-        'vinicunca/no-identical-functions': 'error',
-        'vinicunca/no-ignored-return': 'error',
-        'vinicunca/no-nested-template-literals': 'error',
-        'vinicunca/no-redundant-boolean': 'error',
-        'vinicunca/no-redundant-jump': 'error',
-        'vinicunca/no-unused-collection': 'error',
-        'vinicunca/no-use-of-empty-return-value': 'error',
-        'vinicunca/prefer-immediate-return': 'error',
-        'vinicunca/prefer-single-boolean-return': 'error',
-      },
-    },
   },
 } satisfies ESLint.Plugin;
 

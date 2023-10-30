@@ -1,4 +1,5 @@
-import { type TSESTree } from '@typescript-eslint/utils';
+import type { TSESTree } from '@typescript-eslint/utils';
+
 import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'no-redundant-jump';
@@ -8,24 +9,6 @@ export type MessageIds = 'removeRedundantJump' | 'suggestJumpRemoval';
 const loops = 'WhileStatement, ForStatement, DoWhileStatement, ForInStatement, ForOfStatement';
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    messages: {
-      removeRedundantJump: 'Remove this redundant jump.',
-      suggestJumpRemoval: 'Remove this redundant jump',
-    },
-    schema: [],
-    type: 'suggestion',
-    hasSuggestions: true,
-    docs: {
-      description: 'Jump statements should not be redundant',
-      recommended: 'recommended',
-    },
-  },
-
-  defaultOptions: [],
-
   create: (context) => {
     function reportIfLastStatement(node: TSESTree.ContinueStatement | TSESTree.ReturnStatement) {
       const withArgument = node.type === 'ContinueStatement' ? !!node.label : !!node.argument;
@@ -43,8 +26,8 @@ export default createEslintRule<Options, MessageIds>({
             node,
             suggest: [
               {
-                messageId: 'suggestJumpRemoval',
                 fix: (fixer) => fixer.removeRange([previousToken.range[1], node.range[1]]),
+                messageId: 'suggestJumpRemoval',
               },
             ],
           });
@@ -64,6 +47,16 @@ export default createEslintRule<Options, MessageIds>({
     }
 
     return {
+      ':function > BlockStatement > IfStatement > BlockStatement > ReturnStatement': (
+        node: TSESTree.Node,
+      ) => {
+        reportIfLastStatementInsideIf(node as TSESTree.ReturnStatement);
+      },
+
+      ':function > BlockStatement > ReturnStatement': (node: TSESTree.Node) => {
+        reportIfLastStatement(node as TSESTree.ReturnStatement);
+      },
+
       [`:matches(${loops}) > BlockStatement > ContinueStatement`]: (node: TSESTree.Node) => {
         reportIfLastStatement(node as TSESTree.ContinueStatement);
       },
@@ -73,16 +66,24 @@ export default createEslintRule<Options, MessageIds>({
       ) => {
         reportIfLastStatementInsideIf(node as TSESTree.ContinueStatement);
       },
-
-      ':function > BlockStatement > ReturnStatement': (node: TSESTree.Node) => {
-        reportIfLastStatement(node as TSESTree.ReturnStatement);
-      },
-
-      ':function > BlockStatement > IfStatement > BlockStatement > ReturnStatement': (
-        node: TSESTree.Node,
-      ) => {
-        reportIfLastStatementInsideIf(node as TSESTree.ReturnStatement);
-      },
     };
   },
+
+  defaultOptions: [],
+
+  meta: {
+    docs: {
+      description: 'Jump statements should not be redundant',
+      recommended: 'recommended',
+    },
+    hasSuggestions: true,
+    messages: {
+      removeRedundantJump: 'Remove this redundant jump.',
+      suggestJumpRemoval: 'Remove this redundant jump',
+    },
+    schema: [],
+    type: 'suggestion',
+  },
+
+  name: RULE_NAME,
 });

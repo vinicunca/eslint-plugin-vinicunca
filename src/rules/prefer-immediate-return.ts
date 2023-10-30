@@ -1,30 +1,13 @@
-import { type TSESLint, type TSESTree } from '@typescript-eslint/utils';
-import { createEslintRule } from '../utils/rule';
+import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
+
 import { isIdentifier, isReturnStatement, isThrowStatement, isVariableDeclaration } from '../utils/nodes';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'prefer-immediate-return';
 export type Options = [];
 export type MessageIds = 'doImmediateAction';
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    messages: {
-      doImmediateAction:
-        'Immediately {{action}} this expression instead of assigning it to the temporary variable "{{variable}}".',
-    },
-    schema: [],
-    type: 'suggestion',
-    docs: {
-      description: 'Local variables should not be declared and then immediately returned or thrown',
-      recommended: 'recommended',
-    },
-    fixable: 'code',
-  },
-
-  defaultOptions: [],
-
   create: (context) => {
     return {
       BlockStatement(node) {
@@ -56,12 +39,10 @@ export default createEslintRule<Options, MessageIds>({
           // there must be only one "read" - in `return` or `throw`
           if (sameVariable && sameVariable.references.filter((ref) => ref.isRead()).length === 1) {
             context.report({
-              messageId: 'doImmediateAction',
               data: {
                 action: isReturnStatement(last) ? 'return' : 'throw',
                 variable: returnedIdentifier.name,
               },
-              node: declaredIdentifier.init,
               fix: (fixer) => {
                 const expressionText = context.getSourceCode().getText(declaredIdentifier.init);
                 const rangeToRemoveStart = lastButOne.range[0];
@@ -75,6 +56,8 @@ export default createEslintRule<Options, MessageIds>({
                   fixer.replaceText(returnedIdentifier, expressionText),
                 ];
               },
+              messageId: 'doImmediateAction',
+              node: declaredIdentifier.init,
             });
           }
         }
@@ -108,4 +91,22 @@ export default createEslintRule<Options, MessageIds>({
       }
     }
   },
+
+  defaultOptions: [],
+
+  meta: {
+    docs: {
+      description: 'Local variables should not be declared and then immediately returned or thrown',
+      recommended: 'recommended',
+    },
+    fixable: 'code',
+    messages: {
+      doImmediateAction:
+        'Immediately {{action}} this expression instead of assigning it to the temporary variable "{{variable}}".',
+    },
+    schema: [],
+    type: 'suggestion',
+  },
+
+  name: RULE_NAME,
 });

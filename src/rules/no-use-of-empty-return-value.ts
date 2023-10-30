@@ -1,29 +1,13 @@
-import { type TSESTree } from '@typescript-eslint/utils';
-import { createEslintRule } from '../utils/rule';
+import type { TSESTree } from '@typescript-eslint/utils';
+
 import { isArrowFunctionExpression, isBlockStatement, isFunctionExpression } from '../utils/nodes';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'no-use-of-empty-return-value';
 export type Options = [];
 export type MessageIds = 'removeUseOfOutput';
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    messages: {
-      removeUseOfOutput:
-        'Remove this use of the output from "{{name}}"; "{{name}}" doesn\'t return anything.',
-    },
-    schema: [],
-    type: 'problem',
-    docs: {
-      description: 'The output of functions that don\'t return anything should not be used',
-      recommended: 'recommended',
-    },
-  },
-
-  defaultOptions: [],
-
   create: (context) => {
     const callExpressionsToCheck: Map<
     TSESTree.Identifier | TSESTree.JSXIdentifier,
@@ -32,6 +16,27 @@ export default createEslintRule<Options, MessageIds>({
     const functionsWithReturnValue: Set<TSESTree.FunctionLike> = new Set();
 
     return {
+      ':function': function(node: TSESTree.Node) {
+        const func = node as
+          | TSESTree.ArrowFunctionExpression
+          | TSESTree.FunctionDeclaration
+          | TSESTree.FunctionExpression;
+        if (
+          func.async
+          || func.generator
+          || (isBlockStatement(func.body) && func.body.body.length === 0)
+        ) {
+          functionsWithReturnValue.add(func);
+        }
+      },
+
+      ArrowFunctionExpression(node: TSESTree.Node) {
+        const arrowFunc = node as TSESTree.ArrowFunctionExpression;
+        if (arrowFunc.expression) {
+          functionsWithReturnValue.add(arrowFunc);
+        }
+      },
+
       CallExpression(node: TSESTree.Node) {
         const callExpr = node as TSESTree.CallExpression;
         if (!isReturnValueUsed(callExpr)) {
@@ -55,6 +60,18 @@ export default createEslintRule<Options, MessageIds>({
         }
       },
 
+      'Program:exit': function() {
+        callExpressionsToCheck.forEach((functionDeclaration, callee) => {
+          if (!functionsWithReturnValue.has(functionDeclaration)) {
+            context.report({
+              data: { name: callee.name },
+              messageId: 'removeUseOfOutput',
+              node: callee,
+            });
+          }
+        });
+      },
+
       ReturnStatement(node: TSESTree.Node) {
         const returnStmt = node as TSESTree.ReturnStatement;
         if (returnStmt.argument) {
@@ -68,41 +85,25 @@ export default createEslintRule<Options, MessageIds>({
           functionsWithReturnValue.add(functionNode as TSESTree.FunctionLike);
         }
       },
-
-      ArrowFunctionExpression(node: TSESTree.Node) {
-        const arrowFunc = node as TSESTree.ArrowFunctionExpression;
-        if (arrowFunc.expression) {
-          functionsWithReturnValue.add(arrowFunc);
-        }
-      },
-
-      ':function': function(node: TSESTree.Node) {
-        const func = node as
-          | TSESTree.FunctionExpression
-          | TSESTree.FunctionDeclaration
-          | TSESTree.ArrowFunctionExpression;
-        if (
-          func.async
-          || func.generator
-          || (isBlockStatement(func.body) && func.body.body.length === 0)
-        ) {
-          functionsWithReturnValue.add(func);
-        }
-      },
-
-      'Program:exit': function() {
-        callExpressionsToCheck.forEach((functionDeclaration, callee) => {
-          if (!functionsWithReturnValue.has(functionDeclaration)) {
-            context.report({
-              messageId: 'removeUseOfOutput',
-              node: callee,
-              data: { name: callee.name },
-            });
-          }
-        });
-      },
     };
   },
+
+  defaultOptions: [],
+
+  meta: {
+    docs: {
+      description: 'The output of functions that don\'t return anything should not be used',
+      recommended: 'recommended',
+    },
+    messages: {
+      removeUseOfOutput:
+        'Remove this use of the output from "{{name}}"; "{{name}}" doesn\'t return anything.',
+    },
+    schema: [],
+    type: 'problem',
+  },
+
+  name: RULE_NAME,
 });
 
 function isReturnValueUsed(callExpr: TSESTree.Node) {

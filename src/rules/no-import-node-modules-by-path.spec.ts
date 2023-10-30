@@ -16,9 +16,9 @@ const invalids = [
 ];
 
 ruleTester.run(RULE_NAME, rule as any, {
-  valid: valids,
   invalid: invalids.map((i) => ({
     code: i,
     errors: [{ messageId: 'noImportNodeModulesByPath' }],
   })),
+  valid: valids,
 });

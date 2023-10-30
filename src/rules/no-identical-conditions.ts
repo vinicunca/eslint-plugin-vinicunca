@@ -1,10 +1,11 @@
-import { type TSESLint, type TSESTree } from '@typescript-eslint/utils';
-import { createEslintRule } from '../utils/rule';
+import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
+
 import { areEquivalent } from '../utils/equivalence';
 import { issueLocation, report } from '../utils/locations';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'no-identical-conditions';
-export type MessageIds = 'duplicatedCondition' | 'duplicatedCase' | 'vinicuncaRuntime';
+export type MessageIds = 'duplicatedCase' | 'duplicatedCondition' | 'vinicuncaRuntime';
 type Options = [];
 
 const duplicatedConditionMessage = 'This condition is covered by the one on line {{line}}';
@@ -14,30 +15,6 @@ const splitByOr = splitByLogicalOperator.bind(null, '||');
 const splitByAnd = splitByLogicalOperator.bind(null, '&&');
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    messages: {
-      duplicatedCondition: duplicatedConditionMessage,
-      duplicatedCase: duplicatedCaseMessage,
-      vinicuncaRuntime: '{{vinicuncaRuntimeData}}',
-    },
-    type: 'problem',
-    docs: {
-      description:
-        'Related "if-else-if" and "switch-case" statements should not have the same condition',
-      recommended: 'recommended',
-    },
-    schema: [
-      {
-        // internal parameter
-        enum: ['vinicunca-runtime'],
-      } as any,
-    ],
-  },
-
-  defaultOptions: [],
-
   create(context) {
     const sourceCode = context.getSourceCode();
     return {
@@ -62,8 +39,8 @@ export default createEslintRule<Options, MessageIds>({
             report(
               context,
               {
-                messageId: 'duplicatedCondition',
                 data: { line: current.test.loc.start.line },
+                messageId: 'duplicatedCondition',
                 node: test,
               },
               [issueLocation(current.test.loc, current.test.loc, 'Covering')],
@@ -84,10 +61,10 @@ export default createEslintRule<Options, MessageIds>({
               report(
                 context,
                 {
-                  messageId: 'duplicatedCase',
                   data: {
                     line: duplicateTest.loc.start.line,
                   },
+                  messageId: 'duplicatedCase',
                   node: test,
                 },
                 [issueLocation(duplicateTest.loc, duplicateTest.loc, 'Original')],
@@ -102,10 +79,34 @@ export default createEslintRule<Options, MessageIds>({
     };
   },
 
+  defaultOptions: [],
+
+  meta: {
+    docs: {
+      description:
+        'Related "if-else-if" and "switch-case" statements should not have the same condition',
+      recommended: 'recommended',
+    },
+    messages: {
+      duplicatedCase: duplicatedCaseMessage,
+      duplicatedCondition: duplicatedConditionMessage,
+      vinicuncaRuntime: '{{vinicuncaRuntimeData}}',
+    },
+    schema: [
+      {
+        // internal parameter
+        enum: ['vinicunca-runtime'],
+      } as any,
+    ],
+    type: 'problem',
+  },
+
+  name: RULE_NAME,
+
 });
 
 function splitByLogicalOperator(
-  operator: '??' | '&&' | '||',
+  operator: '&&' | '??' | '||',
   node: TSESTree.Node,
 ): TSESTree.Node[] {
   if (node.type === 'LogicalExpression' && node.operator === operator) {

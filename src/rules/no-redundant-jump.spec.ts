@@ -7,9 +7,9 @@ function invalid(code: string) {
     code,
     errors: [
       {
-        messageId: 'removeRedundantJump',
-        line,
         endLine: line,
+        line,
+        messageId: 'removeRedundantJump',
       },
     ],
   };

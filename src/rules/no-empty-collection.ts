@@ -1,5 +1,5 @@
-import { type TSESLint, type TSESTree } from '@typescript-eslint/utils';
-import { createEslintRule } from '../utils/rule';
+import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
+
 import {
   ancestorsChain,
   findFirstMatchingAncestor,
@@ -7,6 +7,7 @@ import {
   isReferenceTo,
 } from '../utils';
 import { collectionConstructor } from '../utils/collections';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'no-empty-collection';
 export type MessageIds = 'reviewUsageOfIdentifier';
@@ -63,23 +64,6 @@ const strictlyReadingMethods = new Set([
 ]);
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    messages: {
-      reviewUsageOfIdentifier:
-        'Review this usage of "{{identifierName}}" as it can only be empty here.',
-    },
-    schema: [],
-    type: 'problem',
-    docs: {
-      description: 'Empty collections should not be accessed or iterated',
-      recommended: 'recommended',
-    },
-  },
-
-  defaultOptions: [],
-
   create(context) {
     return {
       'Program:exit': () => {
@@ -87,6 +71,23 @@ export default createEslintRule<Options, MessageIds>({
       },
     };
   },
+
+  defaultOptions: [],
+
+  meta: {
+    docs: {
+      description: 'Empty collections should not be accessed or iterated',
+      recommended: 'recommended',
+    },
+    messages: {
+      reviewUsageOfIdentifier:
+        'Review this usage of "{{identifierName}}" as it can only be empty here.',
+    },
+    schema: [],
+    type: 'problem',
+  },
+
+  name: RULE_NAME,
 });
 
 function reportEmptyCollectionsUsage(
@@ -141,10 +142,10 @@ function reportEmptyCollectionUsage(
   if (hasAssignmentOfEmptyCollection) {
     readingUsages.forEach((ref) => {
       context.report({
-        messageId: 'reviewUsageOfIdentifier',
         data: {
           identifierName: ref.identifier.name,
         },
+        messageId: 'reviewUsageOfIdentifier',
         node: ref.identifier,
       });
     });
@@ -201,7 +202,7 @@ function isForIterationPattern(ref: TSESLint.Scope.Reference) {
   const forInOrOfStatement = findFirstMatchingAncestor(
     ref.identifier as TSESTree.Node,
     (n) => n.type === 'ForOfStatement' || n.type === 'ForInStatement',
-  ) as TSESTree.ForOfStatement | TSESTree.ForInStatement;
+  ) as TSESTree.ForInStatement | TSESTree.ForOfStatement;
 
   return forInOrOfStatement && forInOrOfStatement.right === ref.identifier;
 }
@@ -217,7 +218,7 @@ function isElementWrite(memberExpression: TSESTree.MemberExpression) {
     (n) => n.type === 'AssignmentExpression',
   ) as TSESTree.AssignmentExpression;
   if (assignment && assignment.operator === '=') {
-    return [memberExpression, ...ancestors].includes(assignment.left);
+    return [...ancestors, memberExpression].includes(assignment.left);
   }
   return false;
 }

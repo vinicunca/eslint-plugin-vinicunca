@@ -1,10 +1,11 @@
-import { type TSESLint, type TSESTree } from '@typescript-eslint/utils';
-import { createEslintRule } from '../utils/rule';
-import { type TypeServices, hasTypeServices } from '../utils/parser-services';
+import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
+
 import { getTypeFromTreeNode } from '../utils';
+import { type TypeServices, hasTypeServices } from '../utils/parser-services';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'no-ignored-return';
-export type MessageIds = 'useForEach' | 'returnValueMustBeUsed';
+export type MessageIds = 'returnValueMustBeUsed' | 'useForEach';
 export type Options = [];
 
 const METHODS_WITHOUT_SIDE_EFFECTS: { [index: string]: Set<string> } = {
@@ -155,23 +156,6 @@ const METHODS_WITHOUT_SIDE_EFFECTS: { [index: string]: Set<string> } = {
 };
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    messages: {
-      useForEach: 'Consider using "forEach" instead of "map" as its return value is not being used here.',
-      returnValueMustBeUsed: 'The return value of "{{methodName}}" must be used.',
-    },
-    schema: [],
-    type: 'problem',
-    docs: {
-      description: 'Return values from functions without side effects should not be ignored',
-      recommended: 'recommended',
-    },
-  },
-
-  defaultOptions: [],
-
   create(context: TSESLint.RuleContext<string, string[]>) {
     if (!hasTypeServices(context.parserServices)) {
       return {};
@@ -199,6 +183,23 @@ export default createEslintRule<Options, MessageIds>({
       },
     };
   },
+
+  defaultOptions: [],
+
+  meta: {
+    docs: {
+      description: 'Return values from functions without side effects should not be ignored',
+      recommended: 'recommended',
+    },
+    messages: {
+      returnValueMustBeUsed: 'The return value of "{{methodName}}" must be used.',
+      useForEach: 'Consider using "forEach" instead of "map" as its return value is not being used here.',
+    },
+    schema: [],
+    type: 'problem',
+  },
+
+  name: RULE_NAME,
 });
 
 function isReplaceWithCallback(
@@ -229,9 +230,9 @@ function reportDescriptor(
     };
   } else {
     return {
+      data: { methodName },
       messageId: 'returnValueMustBeUsed',
       node,
-      data: { methodName },
     };
   }
 }
@@ -245,7 +246,7 @@ function hasSideEffect(methodName: string, objectType: any, services: TypeServic
   return true;
 }
 
-function typeToString(tp: any, services: TypeServices): string | null {
+function typeToString(tp: any, services: TypeServices): null | string {
   const typechecker = services.program.getTypeChecker();
 
   const baseType = typechecker.getBaseTypeOfLiteralType(tp);

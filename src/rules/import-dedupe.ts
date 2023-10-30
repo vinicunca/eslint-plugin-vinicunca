@@ -5,20 +5,6 @@ export type MessageIds = 'importDedupe';
 export type Options = [];
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-  meta: {
-    type: 'problem',
-    docs: {
-      description: 'Fix duplication in imports',
-      recommended: 'strict',
-    },
-    fixable: 'code',
-    schema: [],
-    messages: {
-      importDedupe: 'Expect no duplication in imports',
-    },
-  },
-  defaultOptions: [],
   create: (context) => {
     return {
       ImportDeclaration(node) {
@@ -31,12 +17,6 @@ export default createEslintRule<Options, MessageIds>({
           const id = n.local.name;
           if (names.has(id)) {
             context.report({
-              node,
-              loc: {
-                start: n.loc.end,
-                end: n.loc.start,
-              },
-              messageId: 'importDedupe',
               fix(fixer) {
                 const s = n.range[0];
                 let e = n.range[1];
@@ -45,6 +25,12 @@ export default createEslintRule<Options, MessageIds>({
                 };
                 return fixer.removeRange([s, e]);
               },
+              loc: {
+                end: n.loc.start,
+                start: n.loc.end,
+              },
+              messageId: 'importDedupe',
+              node,
             });
           }
           names.add(id);
@@ -54,4 +40,18 @@ export default createEslintRule<Options, MessageIds>({
       },
     };
   },
+  defaultOptions: [],
+  meta: {
+    docs: {
+      description: 'Fix duplication in imports',
+      recommended: 'strict',
+    },
+    fixable: 'code',
+    messages: {
+      importDedupe: 'Expect no duplication in imports',
+    },
+    schema: [],
+    type: 'problem',
+  },
+  name: RULE_NAME,
 });

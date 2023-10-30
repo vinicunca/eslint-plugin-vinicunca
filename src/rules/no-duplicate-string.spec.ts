@@ -2,6 +2,106 @@ import { ruleTester } from '../tests/rule-tester';
 import rule, { RULE_NAME } from './no-duplicate-string';
 
 ruleTester.run(RULE_NAME, rule as any, {
+  invalid: [
+    {
+      code: `
+    console.log("some message");
+    console.log("some message");
+    console.log('some message');`,
+      errors: [
+        {
+          column: 17,
+          data: {
+            times: 3,
+          },
+          endColumn: 31,
+          messageId: 'defineConstant',
+        },
+      ],
+    },
+    {
+      code: `
+    console.log("some message");
+    console.log('some message');`,
+      errors: [
+        {
+          column: 17,
+          data: {
+            vinicuncaRuntimeData: JSON.stringify({
+              message: 'Define a constant instead of duplicating this literal 2 times.',
+              secondaryLocations: [
+                {
+                  column: 16,
+                  endColumn: 30,
+                  endLine: 3,
+                  line: 3,
+                  message: 'Duplication',
+                },
+              ],
+            }),
+          },
+          endColumn: 31,
+          endLine: 2,
+          line: 2,
+          messageId: 'vinicuncaRuntime',
+        },
+      ],
+      options: [{ threshold: 2 }, 'vinicunca-runtime'],
+    },
+    {
+      code: `
+    <Foo bar="some string"></Foo>;
+    <Foo bar="some string"></Foo>;
+    <Foo bar="some string"></Foo>;
+    let x = "some-string", y = "some-string", z = "some-string";
+      `,
+      errors: [
+        {
+          data: {
+            times: 3,
+          },
+          line: 5,
+          messageId: 'defineConstant',
+        },
+      ],
+    },
+    {
+      code: `
+    console.log("some message");
+    console.log('some message');`,
+      errors: [
+        {
+          data: {
+            times: 2,
+          },
+          line: 2,
+          messageId: 'defineConstant',
+        },
+      ],
+      options: [{ threshold: 2 }],
+    },
+    {
+      code: `
+    const obj1 = {
+      key: "some message"
+    };
+    const obj2 = {
+      key: "some message"
+    };
+    const obj3 = {
+      key: "some message"
+    };`,
+      errors: [
+        {
+          data: {
+            times: 3,
+          },
+          line: 3,
+          messageId: 'defineConstant',
+        },
+      ],
+    },
+  ],
   valid: [
     {
       code: `
@@ -151,107 +251,7 @@ ruleTester.run(RULE_NAME, rule as any, {
       console.log('Hello world!');
       console.log('Hello world!');
       `,
-      options: [{ threshold: 2, ignoreStrings: 'Hello world!' }, 'vinicunca-runtime'],
-    },
-  ],
-  invalid: [
-    {
-      code: `
-    console.log("some message");
-    console.log("some message");
-    console.log('some message');`,
-      errors: [
-        {
-          messageId: 'defineConstant',
-          data: {
-            times: 3,
-          },
-          column: 17,
-          endColumn: 31,
-        },
-      ],
-    },
-    {
-      code: `
-    console.log("some message");
-    console.log('some message');`,
-      errors: [
-        {
-          messageId: 'vinicuncaRuntime',
-          data: {
-            vinicuncaRuntimeData: JSON.stringify({
-              secondaryLocations: [
-                {
-                  line: 3,
-                  column: 16,
-                  endLine: 3,
-                  endColumn: 30,
-                  message: 'Duplication',
-                },
-              ],
-              message: 'Define a constant instead of duplicating this literal 2 times.',
-            }),
-          },
-          line: 2,
-          endLine: 2,
-          column: 17,
-          endColumn: 31,
-        },
-      ],
-      options: [{ threshold: 2 }, 'vinicunca-runtime'],
-    },
-    {
-      code: `
-    <Foo bar="some string"></Foo>;
-    <Foo bar="some string"></Foo>;
-    <Foo bar="some string"></Foo>;
-    let x = "some-string", y = "some-string", z = "some-string";
-      `,
-      errors: [
-        {
-          messageId: 'defineConstant',
-          data: {
-            times: 3,
-          },
-          line: 5,
-        },
-      ],
-    },
-    {
-      code: `
-    console.log("some message");
-    console.log('some message');`,
-      errors: [
-        {
-          messageId: 'defineConstant',
-          data: {
-            times: 2,
-          },
-          line: 2,
-        },
-      ],
-      options: [{ threshold: 2 }],
-    },
-    {
-      code: `
-    const obj1 = {
-      key: "some message"
-    };
-    const obj2 = {
-      key: "some message"
-    };
-    const obj3 = {
-      key: "some message"
-    };`,
-      errors: [
-        {
-          messageId: 'defineConstant',
-          data: {
-            times: 3,
-          },
-          line: 3,
-        },
-      ],
+      options: [{ ignoreStrings: 'Hello world!', threshold: 2 }, 'vinicunca-runtime'],
     },
   ],
 });

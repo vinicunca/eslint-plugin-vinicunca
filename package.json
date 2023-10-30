@@ -36,33 +36,25 @@
   "scripts": {
     "build": "unbuild",
     "dev": "unbuild --stub",
-    "lint": "pnpm run dev && eslint .",
+    "lint": "pnpm run dev && eslint . --fix",
     "prepublishOnly": "pnpm run build",
     "registry": "pnpm publish --access public --no-git-checks",
     "release": "bumpp package.json --commit --push --tag --commit 'chore: release v'",
     "test": "vitest"
   },
   "peerDependencies": {
-    "eslint": "*"
+    "eslint": ">=8.51.0"
   },
-  "dependencies": {
-    "@typescript-eslint/utils": "^6.8.0"
-  },
+
   "devDependencies": {
-    "@types/eslint": "^8.44.5",
-    "@types/lodash.merge": "^4.6.7",
-    "@types/node": "^20.8.6",
-    "@types/semver": "^7.5.3",
-    "@typescript-eslint/rule-tester": "^6.8.0",
-    "@typescript-eslint/typescript-estree": "^6.8.0",
-    "@typescript-eslint/utils": "^6.8.0",
-    "@vinicunca/eslint-config": "2.0.0-beta.9",
-    "ajv": "^6.10.0",
+    "@types/eslint": "^8.44.6",
+    "@types/node": "^20.8.9",
+    "@typescript-eslint/rule-tester": "^6.9.0",
+    "@typescript-eslint/utils": "^6.9.0",
+    "@vinicunca/eslint-config": "^2.0.7",
     "bumpp": "^9.2.0",
-    "eslint": "^8.51.0",
-    "lodash.merge": "4.6.2",
+    "eslint": "^8.52.0",
     "rimraf": "^5.0.5",
-    "semver": "^7.5.4",
     "typescript": "^5.2.2",
     "unbuild": "^2.0.0",
     "vitest": "^0.34.6"

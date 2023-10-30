@@ -2,120 +2,6 @@ import { ruleTester } from '../tests/rule-tester';
 import rule, { RULE_NAME } from './prefer-single-boolean-return';
 
 ruleTester.run(RULE_NAME, rule as any, {
-  valid: [
-    {
-      code: `
-        function foo() {
-          if (something) {
-            return true;
-          } else if (something) {
-            return false;
-          } else {
-            return true;
-          }
-        }
-      `,
-    },
-    {
-      code: `
-        function foo() {
-          if (something) {
-            return x;
-          } else {
-            return false;
-          }
-        }
-      `,
-    },
-    {
-      code: `
-        function foo(y) {
-          if (something) {
-            return true;
-          } else {
-            return foo;
-          }
-        }
-      `,
-    },
-    {
-      code: `
-        function foo() {
-          if (something) {
-            doSomething();
-          } else {
-            return true;
-          }
-        }
-      `,
-    },
-    {
-      code: `
-        function foo() {
-          if (something) {
-            doSomething();
-            return true;
-          } else {
-            return false;
-          }
-        }
-      `,
-    },
-    {
-      code: `
-        function foo() {
-          if (something) {
-            return;
-          } else {
-            return true;
-          }
-        }
-      `,
-    },
-    {
-      code: `
-        function foo() {
-          if (something) {
-            return true;
-          }
-        }
-      `,
-    },
-    {
-      code: `
-        function foo() {
-          if (something) {
-            return foo(true);
-          } else {
-            return foo(false);
-          }
-        }
-      `,
-    },
-    {
-      code: `
-        function foo() {
-          if (something) {
-            var x;
-          } else {
-            return false;
-          }
-        }
-      `,
-    },
-    {
-      code: `
-        function foo() {
-          if (something) {
-            function f() {}
-            return false;
-          } else {
-            return true;
-          }
-        }
-      `,
-    },
-  ],
   invalid: [
     {
       code: `
@@ -144,26 +30,26 @@ ruleTester.run(RULE_NAME, rule as any, {
       `,
       errors: [
         {
-          messageId: 'replaceIfThenElseByReturn',
-          line: 3,
           column: 11,
+          endColumn: 12,
           endLine: 7,
-          endColumn: 12,
-        },
-        { messageId: 'replaceIfThenElseByReturn', line: 9, column: 11, endLine: 13, endColumn: 12 },
-        {
+          line: 3,
           messageId: 'replaceIfThenElseByReturn',
-          line: 15,
+        },
+        { column: 11, endColumn: 12, endLine: 13, line: 9, messageId: 'replaceIfThenElseByReturn' },
+        {
           column: 11,
-          endLine: 16,
           endColumn: 29,
+          endLine: 16,
+          line: 15,
+          messageId: 'replaceIfThenElseByReturn',
         },
         {
-          messageId: 'replaceIfThenElseByReturn',
-          line: 18,
           column: 11,
-          endLine: 22,
           endColumn: 12,
+          endLine: 22,
+          line: 18,
+          messageId: 'replaceIfThenElseByReturn',
         },
       ],
     },
@@ -193,18 +79,18 @@ ruleTester.run(RULE_NAME, rule as any, {
       `,
       errors: [
         {
-          messageId: 'replaceIfThenElseByReturn',
-          line: 4,
           column: 13,
-          endLine: 6,
           endColumn: 14,
+          endLine: 6,
+          line: 4,
+          messageId: 'replaceIfThenElseByReturn',
         },
         {
-          messageId: 'replaceIfThenElseByReturn',
-          line: 11,
           column: 13,
-          endLine: 13,
           endColumn: 14,
+          endLine: 13,
+          line: 11,
+          messageId: 'replaceIfThenElseByReturn',
         },
       ],
     },
@@ -382,6 +268,120 @@ function foo() {
           ],
         },
       ],
+    },
+  ],
+  valid: [
+    {
+      code: `
+        function foo() {
+          if (something) {
+            return true;
+          } else if (something) {
+            return false;
+          } else {
+            return true;
+          }
+        }
+      `,
+    },
+    {
+      code: `
+        function foo() {
+          if (something) {
+            return x;
+          } else {
+            return false;
+          }
+        }
+      `,
+    },
+    {
+      code: `
+        function foo(y) {
+          if (something) {
+            return true;
+          } else {
+            return foo;
+          }
+        }
+      `,
+    },
+    {
+      code: `
+        function foo() {
+          if (something) {
+            doSomething();
+          } else {
+            return true;
+          }
+        }
+      `,
+    },
+    {
+      code: `
+        function foo() {
+          if (something) {
+            doSomething();
+            return true;
+          } else {
+            return false;
+          }
+        }
+      `,
+    },
+    {
+      code: `
+        function foo() {
+          if (something) {
+            return;
+          } else {
+            return true;
+          }
+        }
+      `,
+    },
+    {
+      code: `
+        function foo() {
+          if (something) {
+            return true;
+          }
+        }
+      `,
+    },
+    {
+      code: `
+        function foo() {
+          if (something) {
+            return foo(true);
+          } else {
+            return foo(false);
+          }
+        }
+      `,
+    },
+    {
+      code: `
+        function foo() {
+          if (something) {
+            var x;
+          } else {
+            return false;
+          }
+        }
+      `,
+    },
+    {
+      code: `
+        function foo() {
+          if (something) {
+            function f() {}
+            return false;
+          } else {
+            return true;
+          }
+        }
+      `,
     },
   ],
 });

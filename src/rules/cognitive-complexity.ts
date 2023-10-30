@@ -1,9 +1,10 @@
-import { type TSESTree } from '@typescript-eslint/utils';
-import { createEslintRule } from '../utils/rule';
-import { isArrowFunctionExpression, isIfStatement, isLogicalExpression } from '../utils/nodes';
-import {
-  type IssueLocation,
+import type { TSESTree } from '@typescript-eslint/utils';
+
+import type {
+  IssueLocation,
 } from '../utils/locations';
+
+import { getJsxShortCircuitNodes } from '../utils/jsx';
 import {
   getFirstToken,
   getFirstTokenAfter,
@@ -11,19 +12,20 @@ import {
   issueLocation,
   report,
 } from '../utils/locations';
-import { getJsxShortCircuitNodes } from '../utils/jsx';
+import { isArrowFunctionExpression, isIfStatement, isLogicalExpression } from '../utils/nodes';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'cognitive-complexity';
-export type MessageIds = 'refactorFunction' | 'vinicuncaRuntime' | 'fileComplexity';
-type Options = (number | 'metric' | 'vinicunca-runtime')[];
+export type MessageIds = 'fileComplexity' | 'refactorFunction' | 'vinicuncaRuntime';
+type Options = ('metric' | 'vinicunca-runtime' | number)[];
 
 const DEFAULT_THRESHOLD = 15;
 
 type LoopStatement =
-  | TSESTree.ForStatement
+  | TSESTree.DoWhileStatement
   | TSESTree.ForInStatement
   | TSESTree.ForOfStatement
-  | TSESTree.DoWhileStatement
+  | TSESTree.ForStatement
   | TSESTree.WhileStatement;
 
 type OptionalLocation = TSESTree.SourceLocation | null | undefined;
@@ -32,30 +34,6 @@ const message
   = 'Refactor this function to reduce its Cognitive Complexity from {{complexityAmount}} to the {{threshold}} allowed.';
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    messages: {
-      refactorFunction: message,
-      vinicuncaRuntime: '{{vinicuncaRuntimeData}}',
-      fileComplexity: '{{complexityAmount}}',
-    },
-    type: 'suggestion',
-    docs: {
-      description: 'Cognitive Complexity of functions should not be too high',
-      recommended: 'recommended',
-    },
-    schema: [
-      { type: 'integer', minimum: 0 },
-      {
-        // internal parameter
-        enum: ['vinicunca-runtime', 'metric'],
-      } as any,
-    ],
-  },
-
-  defaultOptions: [DEFAULT_THRESHOLD],
-
   create(context) {
     const threshold
       = typeof context.options[0] === 'number' ? context.options[0] : DEFAULT_THRESHOLD;
@@ -78,17 +56,17 @@ export default createEslintRule<Options, MessageIds>({
 
     /** Indicator if the current top level function is React functional component */
     const reactFunctionalComponent = {
-      nameStartsWithCapital: false,
-      returnsJsx: false,
-
-      isConfirmed() {
-        return this.nameStartsWithCapital && this.returnsJsx;
-      },
-
       init(node: TSESTree.FunctionLike) {
         this.nameStartsWithCapital = nameStartsWithCapital(node);
         this.returnsJsx = false;
       },
+      isConfirmed() {
+        return this.nameStartsWithCapital && this.returnsJsx;
+      },
+
+      nameStartsWithCapital: false,
+
+      returnsJsx: false,
     };
 
     /** Own (not including nested functions) complexity of the current top function */
@@ -104,21 +82,14 @@ export default createEslintRule<Options, MessageIds>({
     const enclosingFunctions: TSESTree.FunctionLike[] = [];
 
     let secondLevelFunctions: Array<{
+      complexityIfNested: ComplexityPoint[];
+      complexityIfThisSecondaryIsTopLevel: ComplexityPoint[];
+      loc: OptionalLocation;
       node: TSESTree.FunctionLike;
       parent: TSESTree.Node | undefined;
-      complexityIfThisSecondaryIsTopLevel: ComplexityPoint[];
-      complexityIfNested: ComplexityPoint[];
-      loc: OptionalLocation;
     }> = [];
 
     return {
-      ':function': (node: TSESTree.Node) => {
-        onEnterFunction(node as TSESTree.FunctionLike);
-      },
-      ':function:exit': function(node: TSESTree.Node) {
-        onLeaveFunction(node as TSESTree.FunctionLike);
-      },
-
       '*': function(node: TSESTree.Node) {
         if (nestingNodes.has(node)) {
           nesting++;
@@ -130,43 +101,12 @@ export default createEslintRule<Options, MessageIds>({
           nestingNodes.delete(node);
         }
       },
-      Program() {
-        fileComplexity = 0;
-      },
-      'Program:exit': function(node: TSESTree.Node) {
-        if (isFileComplexity) {
-          // value from the message will be saved in SonarQube as file complexity metric
-          context.report({
-            node,
-            messageId: 'fileComplexity',
-            data: { complexityAmount: fileComplexity },
-          });
-        }
-      },
 
-      IfStatement(node: TSESTree.Node) {
-        visitIfStatement(node as TSESTree.IfStatement);
+      ':function': (node: TSESTree.Node) => {
+        onEnterFunction(node as TSESTree.FunctionLike);
       },
-      ForStatement(node: TSESTree.Node) {
-        visitLoop(node as TSESTree.ForStatement);
-      },
-      ForInStatement(node: TSESTree.Node) {
-        visitLoop(node as TSESTree.ForInStatement);
-      },
-      ForOfStatement(node: TSESTree.Node) {
-        visitLoop(node as TSESTree.ForOfStatement);
-      },
-      DoWhileStatement(node: TSESTree.Node) {
-        visitLoop(node as TSESTree.DoWhileStatement);
-      },
-      WhileStatement(node: TSESTree.Node) {
-        visitLoop(node as TSESTree.WhileStatement);
-      },
-      SwitchStatement(node: TSESTree.Node) {
-        visitSwitchStatement(node as TSESTree.SwitchStatement);
-      },
-      ContinueStatement(node: TSESTree.Node) {
-        visitContinueOrBreakStatement(node as TSESTree.ContinueStatement);
+      ':function:exit': function(node: TSESTree.Node) {
+        onLeaveFunction(node as TSESTree.FunctionLike);
       },
       BreakStatement(node: TSESTree.Node) {
         visitContinueOrBreakStatement(node as TSESTree.BreakStatement);
@@ -174,14 +114,52 @@ export default createEslintRule<Options, MessageIds>({
       CatchClause(node: TSESTree.Node) {
         visitCatchClause(node as TSESTree.CatchClause);
       },
-      LogicalExpression(node: TSESTree.Node) {
-        visitLogicalExpression(node as TSESTree.LogicalExpression);
-      },
+
       ConditionalExpression(node: TSESTree.Node) {
         visitConditionalExpression(node as TSESTree.ConditionalExpression);
       },
+      ContinueStatement(node: TSESTree.Node) {
+        visitContinueOrBreakStatement(node as TSESTree.ContinueStatement);
+      },
+      DoWhileStatement(node: TSESTree.Node) {
+        visitLoop(node as TSESTree.DoWhileStatement);
+      },
+      ForInStatement(node: TSESTree.Node) {
+        visitLoop(node as TSESTree.ForInStatement);
+      },
+      ForOfStatement(node: TSESTree.Node) {
+        visitLoop(node as TSESTree.ForOfStatement);
+      },
+      ForStatement(node: TSESTree.Node) {
+        visitLoop(node as TSESTree.ForStatement);
+      },
+      IfStatement(node: TSESTree.Node) {
+        visitIfStatement(node as TSESTree.IfStatement);
+      },
+      LogicalExpression(node: TSESTree.Node) {
+        visitLogicalExpression(node as TSESTree.LogicalExpression);
+      },
+      Program() {
+        fileComplexity = 0;
+      },
+      'Program:exit': function(node: TSESTree.Node) {
+        if (isFileComplexity) {
+          // value from the message will be saved in SonarQube as file complexity metric
+          context.report({
+            data: { complexityAmount: fileComplexity },
+            messageId: 'fileComplexity',
+            node,
+          });
+        }
+      },
       ReturnStatement(node: TSESTree.Node) {
         visitReturnStatement(node as TSESTree.ReturnStatement);
+      },
+      SwitchStatement(node: TSESTree.Node) {
+        visitSwitchStatement(node as TSESTree.SwitchStatement);
+      },
+      WhileStatement(node: TSESTree.Node) {
+        visitLoop(node as TSESTree.WhileStatement);
       },
     };
 
@@ -232,11 +210,11 @@ export default createEslintRule<Options, MessageIds>({
       } else if (enclosingFunctions.length === 1) {
         // second level function
         secondLevelFunctions.push({
-          node,
-          parent: node.parent,
           complexityIfNested,
           complexityIfThisSecondaryIsTopLevel: complexityIfNotNested,
           loc: getMainFunctionTokenLocation(node, node.parent, context),
+          node,
+          parent: node.parent,
         });
       } else {
         // complexity of third+ level functions is computed in their parent functions
@@ -280,7 +258,7 @@ export default createEslintRule<Options, MessageIds>({
     }
 
     function visitContinueOrBreakStatement(
-      statement: TSESTree.ContinueStatement | TSESTree.BreakStatement,
+      statement: TSESTree.BreakStatement | TSESTree.ContinueStatement,
     ) {
       if (statement.label) {
         addComplexity(getFirstToken(statement, context).loc);
@@ -413,12 +391,12 @@ export default createEslintRule<Options, MessageIds>({
         report(
           context,
           {
-            messageId: 'refactorFunction',
             data: {
               complexityAmount,
               threshold,
             },
             loc,
+            messageId: 'refactorFunction',
           },
           secondaryLocations,
           message,
@@ -427,6 +405,30 @@ export default createEslintRule<Options, MessageIds>({
       }
     }
   },
+
+  defaultOptions: [DEFAULT_THRESHOLD],
+
+  meta: {
+    docs: {
+      description: 'Cognitive Complexity of functions should not be too high',
+      recommended: 'recommended',
+    },
+    messages: {
+      fileComplexity: '{{complexityAmount}}',
+      refactorFunction: message,
+      vinicuncaRuntime: '{{vinicuncaRuntimeData}}',
+    },
+    schema: [
+      { minimum: 0, type: 'integer' },
+      {
+        // internal parameter
+        enum: ['vinicunca-runtime', 'metric'],
+      } as any,
+    ],
+    type: 'suggestion',
+  },
+
+  name: RULE_NAME,
 });
 
 interface ComplexityPoint {

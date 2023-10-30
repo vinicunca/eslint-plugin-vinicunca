@@ -1,28 +1,13 @@
-import { type TSESTree } from '@typescript-eslint/utils';
-import { createEslintRule } from '../utils/rule';
+import type { TSESTree } from '@typescript-eslint/utils';
+
 import { isBooleanLiteral, isConditionalExpression, isIfStatement } from '../utils/nodes';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'no-redundant-boolean';
 export type Options = [];
 export type MessageIds = 'removeUnnecessaryBoolean';
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    messages: {
-      removeUnnecessaryBoolean: 'Refactor the code to avoid using this boolean literal.',
-    },
-    schema: [],
-    type: 'suggestion',
-    docs: {
-      description: 'Boolean literals should not be redundant',
-      recommended: 'recommended',
-    },
-  },
-
-  defaultOptions: [],
-
   create: (context) => {
     return {
       BinaryExpression(node: TSESTree.Node) {
@@ -65,4 +50,20 @@ export default createEslintRule<Options, MessageIds>({
       }
     }
   },
+
+  defaultOptions: [],
+
+  meta: {
+    docs: {
+      description: 'Boolean literals should not be redundant',
+      recommended: 'recommended',
+    },
+    messages: {
+      removeUnnecessaryBoolean: 'Refactor the code to avoid using this boolean literal.',
+    },
+    schema: [],
+    type: 'suggestion',
+  },
+
+  name: RULE_NAME,
 });

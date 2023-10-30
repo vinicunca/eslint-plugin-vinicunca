@@ -1,34 +1,13 @@
-import { type TSESLint, type TSESTree } from '@typescript-eslint/utils';
-import { createEslintRule } from '../utils/rule';
+import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
+
 import { isBlockStatement, isBooleanLiteral, isIfStatement, isReturnStatement } from '../utils/nodes';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'prefer-single-boolean-return';
 export type Options = [];
-export type MessageIds = 'replaceIfThenElseByReturn' | 'suggest' | 'suggestCast' | 'suggestBoolean';
+export type MessageIds = 'replaceIfThenElseByReturn' | 'suggest' | 'suggestBoolean' | 'suggestCast';
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    type: 'suggestion',
-    hasSuggestions: true,
-    docs: {
-      description:
-        'Return of boolean expressions should not be wrapped into an "if-then-else" statement',
-      recommended: 'recommended',
-    },
-    schema: [],
-    messages: {
-      replaceIfThenElseByReturn: 'Replace this if-then-else flow by a single return statement.',
-      suggest: 'Replace with single return statement',
-      suggestCast: 'Replace with single return statement using "!!" cast',
-      suggestBoolean:
-        'Replace with single return statement without cast (condition should be boolean!)',
-    },
-  },
-
-  defaultOptions: [],
-
   create: (context) => {
     return {
       IfStatement(node) {
@@ -47,21 +26,21 @@ export default createEslintRule<Options, MessageIds>({
             context.report({
               messageId,
               node,
-              suggest: [{ messageId: 'suggest', fix: getFix(`!(${testText})`) }],
+              suggest: [{ fix: getFix(`!(${testText})`), messageId: 'suggest' }],
             });
           } else if (!shouldCast) {
             context.report({
               messageId,
               node,
-              suggest: [{ messageId: 'suggest', fix: getFix(testText) }],
+              suggest: [{ fix: getFix(testText), messageId: 'suggest' }],
             });
           } else {
             context.report({
               messageId,
               node,
               suggest: [
-                { messageId: 'suggestCast', fix: getFix(`!!(${testText})`) },
-                { messageId: 'suggestBoolean', fix: getFix(testText) },
+                { fix: getFix(`!!(${testText})`), messageId: 'suggestCast' },
+                { fix: getFix(testText), messageId: 'suggestBoolean' },
               ],
             });
           }
@@ -128,10 +107,32 @@ export default createEslintRule<Options, MessageIds>({
     function isBooleanExpression(expr: TSESTree.Expression) {
       return (
         (expr.type === 'UnaryExpression' || expr.type === 'BinaryExpression')
-        && ['!', '==', '===', '!=', '!==', '<', '<=', '>', '>=', 'in', 'instanceof'].includes(
+        && ['!', '!=', '!==', '<', '<=', '==', '===', '>', '>=', 'in', 'instanceof'].includes(
           expr.operator,
         )
       );
     }
   },
+
+  defaultOptions: [],
+
+  meta: {
+    docs: {
+      description:
+        'Return of boolean expressions should not be wrapped into an "if-then-else" statement',
+      recommended: 'recommended',
+    },
+    hasSuggestions: true,
+    messages: {
+      replaceIfThenElseByReturn: 'Replace this if-then-else flow by a single return statement.',
+      suggest: 'Replace with single return statement',
+      suggestBoolean:
+        'Replace with single return statement without cast (condition should be boolean!)',
+      suggestCast: 'Replace with single return statement using "!!" cast',
+    },
+    schema: [],
+    type: 'suggestion',
+  },
+
+  name: RULE_NAME,
 });

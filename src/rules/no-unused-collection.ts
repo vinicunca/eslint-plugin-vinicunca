@@ -1,28 +1,13 @@
-import { type TSESLint, type TSESTree } from '@typescript-eslint/utils';
-import { createEslintRule } from '../utils/rule';
+import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
+
 import { collectionConstructor, writingMethods } from '../utils/collections';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'no-unused-collection';
 export type Options = [];
 export type MessageIds = 'unusedCollection';
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    messages: {
-      unusedCollection: 'Either use this collection\'s contents or remove the collection.',
-    },
-    schema: [],
-    type: 'problem',
-    docs: {
-      description: 'Collection and array contents should be used',
-      recommended: 'recommended',
-    },
-  },
-
-  defaultOptions: [],
-
   create: (context) => {
     return {
       'Program:exit': () => {
@@ -38,6 +23,22 @@ export default createEslintRule<Options, MessageIds>({
       },
     };
   },
+
+  defaultOptions: [],
+
+  meta: {
+    docs: {
+      description: 'Collection and array contents should be used',
+      recommended: 'recommended',
+    },
+    messages: {
+      unusedCollection: 'Either use this collection\'s contents or remove the collection.',
+    },
+    schema: [],
+    type: 'problem',
+  },
+
+  name: RULE_NAME,
 });
 
 function collectUnusedCollections(

@@ -1,9 +1,11 @@
-import { type TSESTree } from '@typescript-eslint/utils';
-import { createEslintRule } from '../utils/rule';
+import type { TSESTree } from '@typescript-eslint/utils';
+
+import type { IssueLocation } from '../utils/locations';
+
 import { areEquivalent } from '../utils/equivalence';
-import { type IssueLocation } from '../utils/locations';
 import { issueLocation, report } from '../utils/locations';
 import { isIdentifier, isLiteral } from '../utils/nodes';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'no-identical-expressions';
 export type MessageIds = 'correctIdenticalSubExpressions' | 'vinicuncaRuntime';
@@ -29,35 +31,13 @@ const message
   = 'Correct one of the identical sub-expressions on both sides of operator "{{operator}}"';
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    messages: {
-      correctIdenticalSubExpressions: message,
-      vinicuncaRuntime: '{{vinicuncaRuntimeData}}',
-    },
-    type: 'problem',
-    docs: {
-      description: 'Identical expressions should not be used on both sides of a binary operator',
-      recommended: 'recommended',
-    },
-    schema: [
-      {
-        // internal parameter
-        enum: ['vinicunca-runtime'],
-      } as any,
-    ],
-  },
-
-  defaultOptions: [],
-
   create(context) {
     return {
-      LogicalExpression(node: TSESTree.Node) {
-        check(node as TSESTree.LogicalExpression);
-      },
       BinaryExpression(node: TSESTree.Node) {
         check(node as TSESTree.BinaryExpression);
+      },
+      LogicalExpression(node: TSESTree.Node) {
+        check(node as TSESTree.LogicalExpression);
       },
     };
 
@@ -74,10 +54,10 @@ export default createEslintRule<Options, MessageIds>({
         report(
           context,
           {
-            messageId: 'correctIdenticalSubExpressions',
             data: {
               operator: expr.operator,
             },
+            messageId: 'correctIdenticalSubExpressions',
             node: isVinicuncaRuntime() ? expr.right : expr,
           },
           secondaryLocations,
@@ -90,6 +70,28 @@ export default createEslintRule<Options, MessageIds>({
       return context.options[context.options.length - 1] === 'vinicunca-runtime';
     }
   },
+
+  defaultOptions: [],
+
+  meta: {
+    docs: {
+      description: 'Identical expressions should not be used on both sides of a binary operator',
+      recommended: 'recommended',
+    },
+    messages: {
+      correctIdenticalSubExpressions: message,
+      vinicuncaRuntime: '{{vinicuncaRuntimeData}}',
+    },
+    schema: [
+      {
+        // internal parameter
+        enum: ['vinicunca-runtime'],
+      } as any,
+    ],
+    type: 'problem',
+  },
+
+  name: RULE_NAME,
 
 });
 

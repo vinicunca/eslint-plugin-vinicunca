@@ -4,36 +4,6 @@ import rule, { RULE_NAME } from './no-identical-conditions';
 const VINICUNCA_RUNTIME = 'vinicunca-runtime';
 
 ruleTester.run(RULE_NAME, rule as any, {
-  valid: [
-    {
-      code: 'if (a) {} else if (b) {}',
-    },
-    {
-      code: 'if (a) {} else {}',
-    },
-    {
-      code: 'if (a && b) {} else if (a) {}',
-    },
-    {
-      code: 'if (a && b) {} else if (c && d) {}',
-    },
-    {
-      code: 'if (a || b) {} else if (c || d) {}',
-    },
-    {
-      code: 'if (a ?? b) {} else if (c) {}',
-    },
-    {
-      code: `
-      switch (a) {
-        case 1:  break;
-        case 2:  break;
-        case 3:  break;
-        default: break;
-      }
-      `,
-    },
-  ],
   invalid: [
     {
       code: `
@@ -42,13 +12,13 @@ ruleTester.run(RULE_NAME, rule as any, {
       `,
       errors: [
         {
-          messageId: 'duplicatedCondition',
+          column: 18,
           data: {
             line: 2,
           },
-          line: 3,
-          column: 18,
           endColumn: 19,
+          line: 3,
+          messageId: 'duplicatedCondition',
         },
       ],
     },
@@ -59,27 +29,27 @@ ruleTester.run(RULE_NAME, rule as any, {
         else if (a) {}
         //       ^
       `,
-      options: [VINICUNCA_RUNTIME],
       errors: [
         {
-          messageId: 'vinicuncaRuntime',
           data: {
             line: 2,
             vinicuncaRuntimeData: JSON.stringify({
+              message: 'This condition is covered by the one on line 2',
               secondaryLocations: [
                 {
-                  line: 2,
                   column: 12,
-                  endLine: 2,
                   endColumn: 13,
+                  endLine: 2,
+                  line: 2,
                   message: 'Covering',
                 },
               ],
-              message: 'This condition is covered by the one on line 2',
             }),
           },
+          messageId: 'vinicuncaRuntime',
         },
       ],
+      options: [VINICUNCA_RUNTIME],
     },
     {
       code: `
@@ -89,13 +59,13 @@ ruleTester.run(RULE_NAME, rule as any, {
       `,
       errors: [
         {
-          messageId: 'duplicatedCondition',
+          column: 18,
           data: {
             line: 3,
           },
-          line: 4,
-          column: 18,
           endColumn: 19,
+          line: 4,
+          messageId: 'duplicatedCondition',
         },
       ],
     },
@@ -107,13 +77,13 @@ ruleTester.run(RULE_NAME, rule as any, {
       `,
       errors: [
         {
-          messageId: 'duplicatedCondition',
+          column: 18,
           data: {
             line: 2,
           },
-          line: 4,
-          column: 18,
           endColumn: 19,
+          line: 4,
+          messageId: 'duplicatedCondition',
         },
       ],
     },
@@ -123,31 +93,31 @@ ruleTester.run(RULE_NAME, rule as any, {
         // >^^^^^^
         else if (a) {}
         //       ^`,
-      options: [VINICUNCA_RUNTIME],
       errors: [
         {
-          messageId: 'vinicuncaRuntime',
-          line: 4,
           column: 18,
-          endLine: 4,
-          endColumn: 19,
           data: {
             line: 2,
             vinicuncaRuntimeData: JSON.stringify({
+              message: 'This condition is covered by the one on line 2',
               secondaryLocations: [
                 {
-                  line: 2,
                   column: 12,
-                  endLine: 2,
                   endColumn: 18,
+                  endLine: 2,
+                  line: 2,
                   message: 'Covering',
                 },
               ],
-              message: 'This condition is covered by the one on line 2',
             }),
           },
+          endColumn: 19,
+          endLine: 4,
+          line: 4,
+          messageId: 'vinicuncaRuntime',
         },
       ],
+      options: [VINICUNCA_RUNTIME],
     },
     {
       code: 'if (a || b) {} else if (b) {}',
@@ -251,29 +221,29 @@ ruleTester.run(RULE_NAME, rule as any, {
             break;
         }
       `,
-      options: [VINICUNCA_RUNTIME],
       errors: [
         {
-          messageId: 'vinicuncaRuntime',
           data: {
-            line: 9,
             column: 15,
             endColumn: 16,
+            line: 9,
             vinicuncaRuntimeData: JSON.stringify({
+              message: 'This case duplicates the one on line 3',
               secondaryLocations: [
                 {
-                  line: 3,
                   column: 15,
-                  endLine: 3,
                   endColumn: 16,
+                  endLine: 3,
+                  line: 3,
                   message: 'Original',
                 },
               ],
-              message: 'This case duplicates the one on line 3',
             }),
           },
+          messageId: 'vinicuncaRuntime',
         },
       ],
+      options: [VINICUNCA_RUNTIME],
     },
     {
       code: `
@@ -294,24 +264,54 @@ ruleTester.run(RULE_NAME, rule as any, {
       `,
       errors: [
         {
-          messageId: 'duplicatedCase',
+          column: 16,
           data: {
             line: 3,
           },
-          line: 9,
-          column: 16,
           endColumn: 17,
+          line: 9,
+          messageId: 'duplicatedCase',
         },
         {
-          messageId: 'duplicatedCase',
+          column: 16,
           data: {
             line: 3,
           },
-          line: 12,
-          column: 16,
           endColumn: 17,
+          line: 12,
+          messageId: 'duplicatedCase',
         },
       ],
+    },
+  ],
+  valid: [
+    {
+      code: 'if (a) {} else if (b) {}',
+    },
+    {
+      code: 'if (a) {} else {}',
+    },
+    {
+      code: 'if (a && b) {} else if (a) {}',
+    },
+    {
+      code: 'if (a && b) {} else if (c && d) {}',
+    },
+    {
+      code: 'if (a || b) {} else if (c || d) {}',
+    },
+    {
+      code: 'if (a ?? b) {} else if (c) {}',
+    },
+    {
+      code: `
+      switch (a) {
+        case 1:  break;
+        case 2:  break;
+        case 3:  break;
+        default: break;
+      }
+      `,
     },
   ],
 });

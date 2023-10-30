@@ -1,20 +1,20 @@
-import { type TSESLint, type TSESTree } from '@typescript-eslint/utils';
+import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
 
 type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 export type MutableReportDescriptor = Writeable<TSESLint.ReportDescriptor<string>>;
 
 export interface IssueLocation {
   column: number;
-  line: number;
+  data?: Record<string, unknown>;
   endColumn: number;
   endLine: number;
+  line: number;
   message?: string;
-  data?: Record<string, unknown>;
 }
 
 export interface EncodedMessage {
-  message: string;
   cost?: number;
+  message: string;
   secondaryLocations: IssueLocation[];
 }
 
@@ -77,9 +77,9 @@ export function report<T = string>(
   }
 
   const encodedMessage: EncodedMessage = {
-    secondaryLocations,
-    message: expandMessage(message, reportDescriptor.data),
     cost,
+    message: expandMessage(message, reportDescriptor.data),
+    secondaryLocations,
   };
   reportDescriptor.messageId = 'vinicuncaRuntime';
 
@@ -118,10 +118,10 @@ export function issueLocation(
   data: Record<string, unknown> = {},
 ): IssueLocation {
   const issueLocation: IssueLocation = {
-    line: startLoc.start.line,
     column: startLoc.start.column,
-    endLine: endLoc.end.line,
     endColumn: endLoc.end.column,
+    endLine: endLoc.end.line,
+    line: startLoc.start.line,
     message,
   };
 
@@ -138,11 +138,11 @@ export function toSecondaryLocation(
 ): IssueLocation {
   const { loc } = locationHolder;
   return {
-    message,
     column: loc.start.column,
-    line: loc.start.line,
     endColumn: loc.end.column,
     endLine: loc.end.line,
+    line: loc.start.line,
+    message,
   };
 }
 

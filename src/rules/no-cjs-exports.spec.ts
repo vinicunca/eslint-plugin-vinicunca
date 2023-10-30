@@ -13,9 +13,9 @@ const invalids = [
 ];
 
 ruleTester.run(RULE_NAME, rule as any, {
-  valid: valids,
   invalid: invalids.map((i) => ({
     ...i,
     errors: [{ messageId: 'noCjsExports' }],
   })),
+  valid: valids,
 });

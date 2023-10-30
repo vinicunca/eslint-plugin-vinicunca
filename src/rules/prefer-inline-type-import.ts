@@ -1,7 +1,8 @@
 // Ported from https://github.com/gajus/eslint-plugin-canonical/blob/master/src/rules/preferInlineTypeImport.js
 // by Gajus Kuizinas https://github.com/gajus
-import { type TSESTree } from '@typescript-eslint/utils';
-import { type RuleFixer, type SourceCode } from '@typescript-eslint/utils/ts-eslint';
+import type { TSESTree } from '@typescript-eslint/utils';
+import type { RuleFixer, SourceCode } from '@typescript-eslint/utils/ts-eslint';
+
 import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'prefer-inline-type-import';
@@ -9,25 +10,12 @@ export type MessageIds = 'preferInlineTypeImport';
 export type Options = [];
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-  meta: {
-    type: 'suggestion',
-    docs: {
-      description: 'Inline type import',
-    },
-    fixable: 'code',
-    schema: [],
-    messages: {
-      preferInlineTypeImport: 'Prefer inline type import',
-    },
-  },
-  defaultOptions: [],
   create: (context) => {
     const sourceCode = context.getSourceCode();
     return {
       ImportDeclaration: (node) => {
         // ignore bare type imports
-        if (node.specifiers.length === 1 && ['ImportNamespaceSpecifier', 'ImportDefaultSpecifier'].includes(node.specifiers[0].type)) {
+        if (node.specifiers.length === 1 && ['ImportDefaultSpecifier', 'ImportNamespaceSpecifier'].includes(node.specifiers[0].type)) {
           return;
         };
         if (node.importKind === 'type' && node.specifiers.length > 0) {
@@ -47,6 +35,19 @@ export default createEslintRule<Options, MessageIds>({
       },
     };
   },
+  defaultOptions: [],
+  meta: {
+    docs: {
+      description: 'Inline type import',
+    },
+    fixable: 'code',
+    messages: {
+      preferInlineTypeImport: 'Prefer inline type import',
+    },
+    schema: [],
+    type: 'suggestion',
+  },
+  name: RULE_NAME,
 });
 
 function * removeTypeSpecifier(fixer: RuleFixer, sourceCode: Readonly<SourceCode>, node: TSESTree.ImportDeclaration) {

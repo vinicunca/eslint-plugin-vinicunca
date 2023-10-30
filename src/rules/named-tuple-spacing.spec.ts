@@ -13,52 +13,51 @@ const valids = [
 ];
 
 ruleTester.run(RULE_NAME, rule as any, {
-  valid: valids,
   invalid: [
     {
       code: 'type T = [i:number]',
-      output: 'type T = [i: number]',
       errors: [{ messageId: 'expectedSpaceAfter' }],
+      output: 'type T = [i: number]',
     },
     {
       code: 'type T = [i:  number]',
-      output: 'type T = [i: number]',
       errors: [{ messageId: 'expectedSpaceAfter' }],
+      output: 'type T = [i: number]',
     },
     {
       code: 'type T = [i?:number]',
-      output: 'type T = [i?: number]',
       errors: [{ messageId: 'expectedSpaceAfter' }],
+      output: 'type T = [i?: number]',
     },
     {
       code: 'type T = [i?   :number]',
-      output: 'type T = [i?: number]',
       errors: [{ messageId: 'unexpectedSpaceBetween' }, { messageId: 'expectedSpaceAfter' }],
+      output: 'type T = [i?: number]',
     },
     {
       code: 'type T = [i : number]',
-      output: 'type T = [i: number]',
       errors: [{ messageId: 'unexpectedSpaceBefore' }],
+      output: 'type T = [i: number]',
     },
     {
       code: 'type T = [i  : number]',
-      output: 'type T = [i: number]',
       errors: [{ messageId: 'unexpectedSpaceBefore' }],
+      output: 'type T = [i: number]',
     },
     {
       code: 'type T = [i  ?  : number]',
-      output: 'type T = [i?: number]',
       errors: [{ messageId: 'unexpectedSpaceBetween' }, { messageId: 'unexpectedSpaceBefore' }],
+      output: 'type T = [i?: number]',
     },
     {
       code: 'type T = [i:number, j:number]',
-      output: 'type T = [i: number, j: number]',
       errors: [{ messageId: 'expectedSpaceAfter' }, { messageId: 'expectedSpaceAfter' }],
+      output: 'type T = [i: number, j: number]',
     },
     {
       code: 'type T = [i:()=>void, j:number]',
-      output: 'type T = [i: ()=>void, j: number]',
       errors: [{ messageId: 'expectedSpaceAfter' }, { messageId: 'expectedSpaceAfter' }],
+      output: 'type T = [i: ()=>void, j: number]',
     },
     {
       code: `
@@ -67,13 +66,13 @@ ruleTester.run(RULE_NAME, rule as any, {
           update: [value:string]
         }>()
         `,
+      errors: [{ messageId: 'expectedSpaceAfter' }, { messageId: 'expectedSpaceAfter' }],
       output: `
         const emit = defineEmits<{
           change: [id: number]
           update: [value: string]
         }>()
         `,
-      errors: [{ messageId: 'expectedSpaceAfter' }, { messageId: 'expectedSpaceAfter' }],
     },
     {
       code: `
@@ -82,13 +81,14 @@ ruleTester.run(RULE_NAME, rule as any, {
           update: [value:string]
         }>()
         `,
+      errors: [{ messageId: 'unexpectedSpaceBetween' }, { messageId: 'expectedSpaceAfter' }, { messageId: 'expectedSpaceAfter' }],
       output: `
         const emit = defineEmits<{
           change: [id?: number]
           update: [value: string]
         }>()
         `,
-      errors: [{ messageId: 'unexpectedSpaceBetween' }, { messageId: 'expectedSpaceAfter' }, { messageId: 'expectedSpaceAfter' }],
     },
   ],
+  valid: valids,
 });

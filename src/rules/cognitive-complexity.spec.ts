@@ -1,86 +1,19 @@
-import { type TSESLint } from '@typescript-eslint/utils';
+import type { TSESLint } from '@typescript-eslint/utils';
+
+import type { IssueLocation } from '../utils/locations';
+
 import { ruleTester } from '../tests/rule-tester';
-import { type IssueLocation } from '../utils/locations';
 import rule, { RULE_NAME } from './cognitive-complexity';
 
 ruleTester.run(RULE_NAME, rule as any, {
-  valid: [
-    { code: 'function zero_complexity() {}', options: [0] },
-    {
-      code: `
-      function Component(obj) {
-        return (
-          <span>{ obj.title?.text }</span>
-        );
-      }`,
-      parserOptions: { ecmaFeatures: { jsx: true } },
-      options: [0],
-    },
-    {
-      code: `
-      function Component(obj) {
-        return (
-          <>
-              { obj.isFriendly && <strong>Welcome</strong> }
-          </>
-        );
-      }`,
-      parserOptions: { ecmaFeatures: { jsx: true } },
-      options: [0],
-    },
-    {
-      code: `
-      function Component(obj) {
-        return (
-          <>
-              { obj.isFriendly && obj.isLoggedIn && <strong>Welcome</strong> }
-          </>
-        );
-      }`,
-      parserOptions: { ecmaFeatures: { jsx: true } },
-      options: [0],
-    },
-    {
-      code: `
-      function Component(obj) {
-        return (
-          <>
-              { obj.x && obj.y && obj.z && <strong>Welcome</strong> }
-          </>
-        );
-      }`,
-      parserOptions: { ecmaFeatures: { jsx: true } },
-      options: [0],
-    },
-    {
-      code: `
-      function Component(obj) {
-        return (
-          <span title={ obj.title || obj.disclaimer }>Text</span>
-        );
-      }`,
-      parserOptions: { ecmaFeatures: { jsx: true } },
-      options: [0],
-    },
-    {
-      code: `
-      function Component(obj) {
-        return (
-          <button type="button" disabled={ obj.user?.isBot ?? obj.isDemo }>Logout</button>
-        );
-      }`,
-      parserOptions: { ecmaFeatures: { jsx: true } },
-      options: [0],
-    },
-  ],
   invalid: [
     // if
     {
       code: `function single_if() {
         if (x) {} // +1
       }`,
+      errors: [message(1, { column: 10, endColumn: 19, line: 1 })],
       options: [0],
-      errors: [message(1, { line: 1, column: 10, endColumn: 19 })],
     },
     {
       code: `
@@ -89,8 +22,8 @@ ruleTester.run(RULE_NAME, rule as any, {
         } else if (condition) { // +1
         } else {}               // +1
       }`,
-      options: [0],
       errors: [message(3)],
+      options: [0],
     },
     {
       code: `
@@ -100,8 +33,8 @@ ruleTester.run(RULE_NAME, rule as any, {
             if (condition) {} // +2
         }
       }`,
-      options: [0],
       errors: [message(4)],
+      options: [0],
     },
     {
       code: `
@@ -111,8 +44,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           } else {}           // +1
         }
       }`,
-      options: [0],
       errors: [message(4)],
+      options: [0],
     },
     {
       code: `
@@ -121,8 +54,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           if (condition)        // +2 (nesting level +1)
             if (condition) {}   // +3
       }`,
-      options: [0],
       errors: [message(6)],
+      options: [0],
     },
     {
       code: `
@@ -132,8 +65,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           if (condition) {}      // +2
         }
       }`,
-      options: [0],
       errors: [message(4)],
+      options: [0],
     },
 
     // loops
@@ -162,8 +95,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           if (condition) {}                 // +2
         }
       }`,
-      options: [0],
       errors: [message(17)],
+      options: [0],
     },
 
     // switch
@@ -182,8 +115,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           }
         }
       }`,
-      options: [0],
       errors: [message(6)],
+      options: [0],
     },
 
     // continue & break
@@ -203,8 +136,8 @@ ruleTester.run(RULE_NAME, rule as any, {
             continue;
         }
       }`,
-      options: [0],
       errors: [message(6)],
+      options: [0],
     },
     {
       code: `
@@ -215,8 +148,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           continue label;        // +1
         }
       }`,
-      options: [0],
       errors: [message(3)],
+      options: [0],
     },
 
     // try-catch-finally
@@ -231,8 +164,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           if (condition) {}      // +1
         }
       }`,
-      options: [0],
       errors: [message(5)],
+      options: [0],
     },
     {
       code: `
@@ -243,8 +176,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           if (condition) {}      // +1
         }
       }`,
-      options: [0],
       errors: [message(2)],
+      options: [0],
     },
     testCaseWithVinicuncaRuntime(
       `
@@ -268,29 +201,29 @@ ruleTester.run(RULE_NAME, rule as any, {
         return foo(a && b) && c; // +1 "&&", +1 "&&"
       }`,
       [
-        { line: 3, column: 8, endLine: 3, endColumn: 10, message: '+1' }, // if
-        { line: 7, column: 10, endLine: 7, endColumn: 14, message: '+1' }, // else
+        { column: 8, endColumn: 10, endLine: 3, line: 3, message: '+1' }, // if
+        { column: 10, endColumn: 14, endLine: 7, line: 7, message: '+1' }, // else
         {
-          line: 4,
           column: 10,
-          endLine: 4,
           endColumn: 12,
+          endLine: 4,
+          line: 4,
           message: '+2 (incl. 1 for nesting)',
         }, // if
-        { line: 4, column: 28, endLine: 4, endColumn: 32, message: '+1' }, // else
+        { column: 28, endColumn: 32, endLine: 4, line: 4, message: '+1' }, // else
         {
-          line: 6,
           column: 10,
-          endLine: 6,
           endColumn: 15,
+          endLine: 6,
+          line: 6,
           message: '+2 (incl. 1 for nesting)',
         }, // catch
-        { line: 11, column: 8, endLine: 11, endColumn: 13, message: '+1' }, // while
-        { line: 12, column: 10, endLine: 12, endColumn: 15, message: '+1' }, // break
-        { line: 15, column: 10, endLine: 15, endColumn: 11, message: '+1' }, // ?
-        { line: 17, column: 8, endLine: 17, endColumn: 14, message: '+1' }, // switch
-        { line: 19, column: 27, endLine: 19, endColumn: 29, message: '+1' }, // &&
-        { line: 19, column: 21, endLine: 19, endColumn: 23, message: '+1' }, // &&
+        { column: 8, endColumn: 13, endLine: 11, line: 11, message: '+1' }, // while
+        { column: 10, endColumn: 15, endLine: 12, line: 12, message: '+1' }, // break
+        { column: 10, endColumn: 11, endLine: 15, line: 15, message: '+1' }, // ?
+        { column: 8, endColumn: 14, endLine: 17, line: 17, message: '+1' }, // switch
+        { column: 27, endColumn: 29, endLine: 19, line: 19, message: '+1' }, // &&
+        { column: 21, endColumn: 23, endLine: 19, line: 19, message: '+1' }, // &&
       ],
       13,
     ),
@@ -302,9 +235,9 @@ ruleTester.run(RULE_NAME, rule as any, {
         foo(1 && 2 || 3 && 4);
       }`,
       [
-        { line: 3, column: 14, endLine: 3, endColumn: 16, message: '+1' }, // &&
-        { line: 3, column: 19, endLine: 3, endColumn: 21, message: '+1' }, // ||
-        { line: 3, column: 24, endLine: 3, endColumn: 26, message: '+1' }, // &&
+        { column: 14, endColumn: 16, endLine: 3, line: 3, message: '+1' }, // &&
+        { column: 19, endColumn: 21, endLine: 3, line: 3, message: '+1' }, // ||
+        { column: 24, endColumn: 26, endLine: 3, line: 3, message: '+1' }, // &&
       ],
     ),
     {
@@ -319,16 +252,16 @@ ruleTester.run(RULE_NAME, rule as any, {
         foo(1 && 2 || 3 && 4); // +3
         foo(1 && 2 && !(3 && 4)); // +2
       }`,
-      options: [0],
       errors: [message(12)],
+      options: [0],
     },
     {
       code: `
       function conditional_expression() {
         return condition ? trueValue : falseValue;
       }`,
-      options: [0],
       errors: [message(1)],
+      options: [0],
     },
     {
       code: `
@@ -337,8 +270,8 @@ ruleTester.run(RULE_NAME, rule as any, {
         x = condition1 ? trueValue1 : (condition2 ? trueValue2 : falseValue2)  ; // +3
         x = condition1 ? (condition2 ? trueValue2 : falseValue2) : (condition3 ? trueValue3 : falseValue3); // +5
       }`,
-      options: [0],
       errors: [message(11)],
+      options: [0],
     },
     {
       code: `
@@ -350,20 +283,20 @@ ruleTester.run(RULE_NAME, rule as any, {
         do {} while (a && b)                     // +1(do) +1(&&)
         for (var i = a && b; a && b; a && b) {}  // +1(for) +1(&&)  +1(&&)  +1(&&)
       }`,
-      options: [0],
       errors: [message(11)],
+      options: [0],
     },
 
     // different function types
     {
       code: 'var arrowFunction = (a, b) => a && b;',
+      errors: [message(1, { column: 28, endColumn: 30, endLine: 1, line: 1 })],
       options: [0],
-      errors: [message(1, { line: 1, endLine: 1, column: 28, endColumn: 30 })],
     },
     {
       code: 'var functionExpression = function(a, b) { return a && b; }',
+      errors: [message(1, { column: 26, endColumn: 34, endLine: 1, line: 1 })],
       options: [0],
-      errors: [message(1, { line: 1, endLine: 1, column: 26, endColumn: 34 })],
     },
     {
       code: `
@@ -374,8 +307,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           }
         }
       }`,
+      errors: [message(1, { column: 9, endColumn: 15, endLine: 3, line: 3 })],
       options: [0],
-      errors: [message(1, { line: 3, endLine: 3, column: 9, endColumn: 15 })],
     },
     {
       code: `
@@ -384,8 +317,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           if (condition) {}  // +1
         }
       }`,
+      errors: [message(1, { column: 9, endColumn: 20, endLine: 3, line: 3 })],
       options: [0],
-      errors: [message(1, { line: 3, endLine: 3, column: 9, endColumn: 20 })],
     },
     {
       code: `
@@ -397,11 +330,11 @@ ruleTester.run(RULE_NAME, rule as any, {
           if (condition) {}  // +1
         }
       }`,
-      options: [0],
       errors: [
-        message(1, { line: 3, endLine: 3, column: 13, endColumn: 16 }),
-        message(1, { line: 6, endLine: 6, column: 13, endColumn: 16 }),
+        message(1, { column: 13, endColumn: 16, endLine: 3, line: 3 }),
+        message(1, { column: 13, endColumn: 16, endLine: 6, line: 6 }),
       ],
+      options: [0],
     },
     {
       code: `
@@ -410,8 +343,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           if (condition) {}  // +1
         }
       }`,
+      errors: [message(1, { column: 10, endColumn: 15, endLine: 3, line: 3 })],
       options: [0],
-      errors: [message(1, { line: 3, endLine: 3, column: 10, endColumn: 15 })],
     },
     {
       // here function is a function declaration, but it has no name (despite of the @types/estree definition)
@@ -419,8 +352,8 @@ ruleTester.run(RULE_NAME, rule as any, {
       export default function() {
         if (options) {}
       }`,
+      errors: [message(1, { column: 22, endColumn: 30, endLine: 2, line: 2 })],
       options: [0],
-      errors: [message(1, { line: 2, endLine: 2, column: 22, endColumn: 30 })],
     },
 
     // nested functions
@@ -431,8 +364,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           if (condition) {}      // +1
         }
       }`,
-      options: [0],
       errors: [message(1, { line: 3 })],
+      options: [0],
     },
     {
       code: `
@@ -442,8 +375,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           if (condition) {}        // +2
         }
       }`,
-      options: [0],
       errors: [message(3, { line: 2 })],
+      options: [0],
     },
     {
       code: `
@@ -453,8 +386,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           if (condition) {}        // +1
         }
       }`,
-      options: [0],
       errors: [message(1, { line: 2 }), message(1, { line: 4 })],
+      options: [0],
     },
     {
       code: `
@@ -465,8 +398,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           }
         }
       }`,
-      options: [0],
       errors: [message(2, { line: 3 })],
+      options: [0],
     },
     {
       code: `
@@ -478,8 +411,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           }
         }
       }`,
-      options: [0],
       errors: [message(3, { line: 3 })],
+      options: [0],
     },
     {
       code: `
@@ -489,8 +422,8 @@ ruleTester.run(RULE_NAME, rule as any, {
         }
         if (condition) {}          // +1
       }`,
-      options: [0],
       errors: [message(3, { line: 2 })],
+      options: [0],
     },
     {
       code: `
@@ -501,8 +434,8 @@ ruleTester.run(RULE_NAME, rule as any, {
           }
         }
       }`,
+      errors: [message(1, { column: 17, endColumn: 23, line: 4 })],
       options: [0],
-      errors: [message(1, { line: 4, column: 17, endColumn: 23 })],
     },
 
     // spaghetti
@@ -512,8 +445,8 @@ ruleTester.run(RULE_NAME, rule as any, {
         if (cond) {}
         return a;
       })(function(b) {return b + 1})(0);`,
-      options: [0],
       errors: [message(1)],
+      options: [0],
     },
 
     // ignore React functional components
@@ -526,9 +459,9 @@ ruleTester.run(RULE_NAME, rule as any, {
         if (x) {} // +1
         return <h1>Hello, world</h1>;
       }`,
-      parserOptions: { ecmaFeatures: { jsx: true } },
-      options: [0],
       errors: [message(1, { line: 2 }), message(1, { line: 3 })],
+      options: [0],
+      parserOptions: { ecmaFeatures: { jsx: true } },
     },
     {
       code: `
@@ -539,9 +472,9 @@ ruleTester.run(RULE_NAME, rule as any, {
         if (x) {} // +1
         return <h1>Hello, world</h1>;
       }`,
-      parserOptions: { ecmaFeatures: { jsx: true } },
-      options: [0],
       errors: [message(1, { line: 2 }), message(1, { line: 3 })],
+      options: [0],
+      parserOptions: { ecmaFeatures: { jsx: true } },
     },
     {
       code: `
@@ -557,9 +490,9 @@ ruleTester.run(RULE_NAME, rule as any, {
           </>
         );
       }`,
-      parserOptions: { ecmaFeatures: { jsx: true } },
-      options: [0],
       errors: [message(1, { line: 2 }), message(1, { line: 3 })],
+      options: [0],
+      parserOptions: { ecmaFeatures: { jsx: true } },
     },
     testCaseWithVinicuncaRuntime(
       `
@@ -571,8 +504,8 @@ ruleTester.run(RULE_NAME, rule as any, {
         );
       }`,
       [
-        { line: 5, column: 41, endLine: 5, endColumn: 43, message: '+1' }, // ??
-        { line: 5, column: 56, endLine: 5, endColumn: 57, message: '+1' }, // ?:
+        { column: 41, endColumn: 43, endLine: 5, line: 5, message: '+1' }, // ??
+        { column: 56, endColumn: 57, endLine: 5, line: 5, message: '+1' }, // ?:
       ],
     ),
     testCaseWithVinicuncaRuntime(
@@ -585,8 +518,8 @@ ruleTester.run(RULE_NAME, rule as any, {
         );
       }`,
       [
-        { line: 5, column: 25, endLine: 5, endColumn: 27, message: '+1' }, // &&
-        { line: 5, column: 38, endLine: 5, endColumn: 40, message: '+1' }, // ||
+        { column: 25, endColumn: 27, endLine: 5, line: 5, message: '+1' }, // &&
+        { column: 38, endColumn: 40, endLine: 5, line: 5, message: '+1' }, // ||
       ],
     ),
     testCaseWithVinicuncaRuntime(
@@ -599,30 +532,83 @@ ruleTester.run(RULE_NAME, rule as any, {
         );
       }`,
       [
-        { line: 5, column: 25, endLine: 5, endColumn: 27, message: '+1' }, // &&
-        { line: 5, column: 40, endLine: 5, endColumn: 41, message: '+1' }, // ||
+        { column: 25, endColumn: 27, endLine: 5, line: 5, message: '+1' }, // &&
+        { column: 40, endColumn: 41, endLine: 5, line: 5, message: '+1' }, // ||
       ],
     ),
+  ],
+  valid: [
+    { code: 'function zero_complexity() {}', options: [0] },
+    {
+      code: `
+      function Component(obj) {
+        return (
+          <span>{ obj.title?.text }</span>
+        );
+      }`,
+      options: [0],
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+    {
+      code: `
+      function Component(obj) {
+        return (
+          <>
+              { obj.isFriendly && <strong>Welcome</strong> }
+          </>
+        );
+      }`,
+      options: [0],
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+    {
+      code: `
+      function Component(obj) {
+        return (
+          <>
+              { obj.isFriendly && obj.isLoggedIn && <strong>Welcome</strong> }
+          </>
+        );
+      }`,
+      options: [0],
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+    {
+      code: `
+      function Component(obj) {
+        return (
+          <>
+              { obj.x && obj.y && obj.z && <strong>Welcome</strong> }
+          </>
+        );
+      }`,
+      options: [0],
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+    {
+      code: `
+      function Component(obj) {
+        return (
+          <span title={ obj.title || obj.disclaimer }>Text</span>
+        );
+      }`,
+      options: [0],
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+    {
+      code: `
+      function Component(obj) {
+        return (
+          <button type="button" disabled={ obj.user?.isBot ?? obj.isDemo }>Logout</button>
+        );
+      }`,
+      options: [0],
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
   ],
 });
 
 ruleTester.run(`${RULE_NAME} 15`, rule as any, {
-  valid: [
-    {
-      code: `
-      function foo() {
-        if (a) {             // +1 (nesting level +1)
-          if (b) {           // +2 (nesting level +1)
-            if (c) {         // +3 (nesting level +1)
-              if (d) {       // +4 (nesting level +1)
-                if (e) {}    // +5 (nesting level +1)
-              }
-            }
-          }
-        }
-      }`,
-    },
-  ],
   invalid: [
     {
       code: `
@@ -641,19 +627,34 @@ ruleTester.run(`${RULE_NAME} 15`, rule as any, {
       }`,
       errors: [
         {
-          messageId: 'refactorFunction',
           data: {
             complexityAmount: 21,
             threshold: 15,
           },
+          messageId: 'refactorFunction',
         },
       ],
+    },
+  ],
+  valid: [
+    {
+      code: `
+      function foo() {
+        if (a) {             // +1 (nesting level +1)
+          if (b) {           // +2 (nesting level +1)
+            if (c) {         // +3 (nesting level +1)
+              if (d) {       // +4 (nesting level +1)
+                if (e) {}    // +5 (nesting level +1)
+              }
+            }
+          }
+        }
+      }`,
     },
   ],
 });
 
 ruleTester.run('file-cognitive-complexity', rule as any, {
-  valid: [],
   invalid: [
     {
       code: `
@@ -736,40 +737,41 @@ class TopLevel {
   }
 }
       `,
+      errors: [{ data: { complexityAmount: 25 }, messageId: 'fileComplexity' }],
       options: [0, 'metric'],
-      errors: [{ messageId: 'fileComplexity', data: { complexityAmount: 25 } }],
     },
   ],
+  valid: [],
 });
 
 function testCaseWithVinicuncaRuntime(
   code: string,
   secondaryLocations: IssueLocation[],
   complexity?: number,
-): TSESLint.InvalidTestCase<string, (number | 'vinicunca-runtime')[]> {
+): TSESLint.InvalidTestCase<string, ('vinicunca-runtime' | number)[]> {
   const cost = complexity ?? secondaryLocations.length;
   const message = `Refactor this function to reduce its Cognitive Complexity from ${cost} to the 0 allowed.`;
-  const vinicuncaRuntimeData = JSON.stringify({ secondaryLocations, message, cost });
+  const vinicuncaRuntimeData = JSON.stringify({ cost, message, secondaryLocations });
   return {
     code,
-    parserOptions: { ecmaFeatures: { jsx: true } },
-    options: [0, 'vinicunca-runtime'],
     errors: [
       {
-        messageId: 'vinicuncaRuntime',
         data: {
           threshold: 0,
           vinicuncaRuntimeData,
         },
+        messageId: 'vinicuncaRuntime',
       },
     ],
+    options: [0, 'vinicunca-runtime'],
+    parserOptions: { ecmaFeatures: { jsx: true } },
   };
 }
 
 function message(complexityAmount: number, other: Partial<TSESLint.TestCaseError<string>> = {}) {
   return {
-    messageId: 'refactorFunction',
     data: { complexityAmount, threshold: 0 },
+    messageId: 'refactorFunction',
     ...other,
   };
 }

@@ -14,6 +14,11 @@ const invalids = [
 ] as const;
 
 ruleTester.run(RULE_NAME, rule as any, {
+  invalid: invalids.map((i) => ({
+    code: i[0],
+    errors: Array.from({ length: i[2] || 1 }, () => ({ messageId: 'genericSpacingMismatch' })),
+    output: i[1].trim(),
+  })),
   valid: [
     'type Foo<T = true> = T',
     'type Foo<T extends true = true> = T',
@@ -46,9 +51,4 @@ ruleTester.run(RULE_NAME, rule as any, {
     'type Foo<\r\nT = true,\r\nK = false,\r\n> = T',
     'const toSortedImplementation = Array.prototype.toSorted || function <T>(name: T): void {}',
   ],
-  invalid: invalids.map((i) => ({
-    code: i[0],
-    output: i[1].trim(),
-    errors: Array.from({ length: i[2] || 1 }, () => ({ messageId: 'genericSpacingMismatch' })),
-  })),
 });

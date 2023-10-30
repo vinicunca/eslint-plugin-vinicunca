@@ -1,4 +1,4 @@
-import { type ParserServices, type ParserServicesWithTypeInformation } from '@typescript-eslint/utils';
+import type { ParserServices, ParserServicesWithTypeInformation } from '@typescript-eslint/utils';
 
 export type TypeServices = ParserServicesWithTypeInformation;
 

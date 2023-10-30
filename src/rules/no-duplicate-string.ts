@@ -1,6 +1,7 @@
-import { type TSESLint, type TSESTree } from '@typescript-eslint/utils';
-import { createEslintRule } from '../utils/rule';
+import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
+
 import { issueLocation, report } from '../utils/locations';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'no-duplicate-string';
 export type MessageIds = 'defineConstant' | 'vinicuncaRuntime';
@@ -20,40 +21,14 @@ const EXCLUDED_CONTEXTS = [
 const message = 'Define a constant instead of duplicating this literal {{times}} times.';
 
 type Options =
-  | [{ threshold?: number; ignoreStrings?: string } | undefined, 'vinicunca-runtime']
-  | [{ threshold?: number; ignoreStrings?: string } | undefined];
+  | [{ ignoreStrings?: string; threshold?: number } | undefined, 'vinicunca-runtime']
+  | [{ ignoreStrings?: string; threshold?: number } | undefined];
 type Context = TSESLint.RuleContext<string, Options>;
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    messages: {
-      defineConstant: message,
-      vinicuncaRuntime: '{{vinicuncaRuntimeData}}',
-    },
-    type: 'suggestion',
-    docs: {
-      description: 'String literals should not be duplicated',
-      recommended: 'recommended',
-    },
-    schema: [
-      {
-        type: 'object',
-        properties: {
-          threshold: { type: 'integer', minimum: 2 },
-          ignoreStrings: { type: 'string', default: DEFAULT_IGNORE_STRINGS },
-        },
-      },
-      {
-        enum: ['vinicunca-runtime'] /* internal parameter for rules having secondary locations */,
-      } as any,
-    ],
-  },
-  defaultOptions: [{ threshold: DEFAULT_THRESHOLD, ignoreStrings: DEFAULT_IGNORE_STRINGS }],
   create(context) {
     const literalsByValue: Map<string, TSESTree.Literal[]> = new Map();
-    const { threshold, ignoreStrings } = extractOptions(context);
+    const { ignoreStrings, threshold } = extractOptions(context);
     const whitelist = ignoreStrings.split(',');
     return {
       'Literal': (node: TSESTree.Node) => {
@@ -87,9 +62,9 @@ export default createEslintRule<Options, MessageIds>({
             report(
               context,
               {
+                data: { times: literals.length.toString() },
                 messageId: 'defineConstant',
                 node: primaryNode,
-                data: { times: literals.length.toString() },
               },
               secondaryIssues,
               message,
@@ -99,6 +74,32 @@ export default createEslintRule<Options, MessageIds>({
       },
     };
   },
+
+  defaultOptions: [{ ignoreStrings: DEFAULT_IGNORE_STRINGS, threshold: DEFAULT_THRESHOLD }],
+  meta: {
+    docs: {
+      description: 'String literals should not be duplicated',
+      recommended: 'recommended',
+    },
+    messages: {
+      defineConstant: message,
+      vinicuncaRuntime: '{{vinicuncaRuntimeData}}',
+    },
+    schema: [
+      {
+        properties: {
+          ignoreStrings: { default: DEFAULT_IGNORE_STRINGS, type: 'string' },
+          threshold: { minimum: 2, type: 'integer' },
+        },
+        type: 'object',
+      },
+      {
+        enum: ['vinicunca-runtime'] /* internal parameter for rules having secondary locations */,
+      } as any,
+    ],
+    type: 'suggestion',
+  },
+  name: RULE_NAME,
 });
 
 function isExcludedByUsageContext(context: Context, literal: TSESTree.Literal) {
@@ -132,6 +133,6 @@ function extractOptions(context: Context) {
   if (typeof options?.ignoreStrings === 'string') {
     ignoreStrings = options.ignoreStrings;
   }
-  return { threshold, ignoreStrings };
+  return { ignoreStrings, threshold };
 }
 

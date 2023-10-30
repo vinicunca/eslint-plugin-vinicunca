@@ -2,8 +2,6 @@ import { ruleTester } from '../tests/rule-tester';
 import rule, { RULE_NAME } from './no-empty-collection';
 
 ruleTester.run(RULE_NAME, rule as any, {
-  valid: [
-  ],
   invalid: [
     {
       code: `const array : number[] = [];
@@ -12,16 +10,18 @@ ruleTester.run(RULE_NAME, rule as any, {
               }`,
       errors: [
         {
-          messageId: 'reviewUsageOfIdentifier',
+          column: 29,
           data: {
             identifierName: 'array',
           },
-          line: 3,
-          endLine: 3,
-          column: 29,
           endColumn: 34,
+          endLine: 3,
+          line: 3,
+          messageId: 'reviewUsageOfIdentifier',
         },
       ],
     },
+  ],
+  valid: [
   ],
 });

@@ -1,10 +1,29 @@
-import { type TSESLint } from '@typescript-eslint/utils';
+import type { TSESLint } from '@typescript-eslint/utils';
+
 import { ruleTester } from '../tests/rule-tester';
 import rule, { RULE_NAME } from './no-use-of-empty-return-value';
 
 const FUNCTION_NO_RETURN = 'function noReturn() { }\n ';
 
 ruleTester.run(RULE_NAME, rule as any, {
+  invalid: [
+    invalidPrefixWithFunction('console.log(noReturn());'),
+    invalidPrefixWithFunction('x = noReturn();'),
+    invalidPrefixWithFunction('noReturn() ? foo() : bar();'),
+    invalidPrefixWithFunction('noReturn().foo();'),
+    invalidPrefixWithFunction('let x = noReturn();'),
+    invalidPrefixWithFunction('for (var x in noReturn()) { }'),
+    invalidPrefixWithFunction('for (var x of noReturn()) { }'),
+    invalidPrefixWithFunction('noReturn() && doSomething();'),
+    invalid('var noReturn = function () { 1; }; console.log(noReturn());'),
+    invalid('var noReturn = () => { 42;}; console.log(noReturn());'),
+    invalid('function noReturn() { return; }; console.log(noReturn());'),
+    invalid(
+      'var noReturn = function () { let x = () => { return 42 }; }; console.log(noReturn());',
+    ),
+    invalid('var funcExpr = function noReturn () { 1; console.log(noReturn()); };'),
+    invalid('var noReturn = () => { var x = () => {return 1}  }; x = noReturn();'),
+  ],
   valid: [
     { code: 'function withReturn() { return 1; } console.log(withReturn());' },
     { code: 'let x = () => {}; if (cond) {x = () => 1} let y = x();' },
@@ -33,24 +52,6 @@ ruleTester.run(RULE_NAME, rule as any, {
     { code: 'function* noReturn() { yield 1; } noReturn().next();' },
     { code: 'function* noReturn() { yield 1; } noReturn();' },
   ],
-  invalid: [
-    invalidPrefixWithFunction('console.log(noReturn());'),
-    invalidPrefixWithFunction('x = noReturn();'),
-    invalidPrefixWithFunction('noReturn() ? foo() : bar();'),
-    invalidPrefixWithFunction('noReturn().foo();'),
-    invalidPrefixWithFunction('let x = noReturn();'),
-    invalidPrefixWithFunction('for (var x in noReturn()) { }'),
-    invalidPrefixWithFunction('for (var x of noReturn()) { }'),
-    invalidPrefixWithFunction('noReturn() && doSomething();'),
-    invalid('var noReturn = function () { 1; }; console.log(noReturn());'),
-    invalid('var noReturn = () => { 42;}; console.log(noReturn());'),
-    invalid('function noReturn() { return; }; console.log(noReturn());'),
-    invalid(
-      'var noReturn = function () { let x = () => { return 42 }; }; console.log(noReturn());',
-    ),
-    invalid('var funcExpr = function noReturn () { 1; console.log(noReturn()); };'),
-    invalid('var noReturn = () => { var x = () => {return 1}  }; x = noReturn();'),
-  ],
 });
 
 function invalidPrefixWithFunction(
@@ -61,10 +62,10 @@ function invalidPrefixWithFunction(
     code: `function noReturn() { 1;} ${code}`,
     errors: [
       {
-        messageId: 'removeUseOfOutput',
         data: {
           name: functionName,
         },
+        messageId: 'removeUseOfOutput',
       },
     ],
   };
@@ -75,10 +76,10 @@ function invalid(code: string): { code: string; errors: TSESLint.TestCaseError<s
     code,
     errors: [
       {
-        messageId: 'removeUseOfOutput',
         data: {
           name: 'noReturn',
         },
+        messageId: 'removeUseOfOutput',
       },
     ],
   };

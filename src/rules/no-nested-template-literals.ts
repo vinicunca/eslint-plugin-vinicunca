@@ -1,36 +1,21 @@
-import { type TSESTree } from '@typescript-eslint/utils';
-import { createEslintRule } from '../utils/rule';
+import type { TSESTree } from '@typescript-eslint/utils';
+
 import { ancestorsChain } from '../utils';
+import { createEslintRule } from '../utils/rule';
 
 export const RULE_NAME = 'no-nested-template-literals';
 export type MessageIds = 'nestedTemplateLiterals';
 export type Options = [];
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    messages: {
-      nestedTemplateLiterals: 'Refactor this code to not use nested template literals.',
-    },
-    schema: [],
-    type: 'suggestion',
-    docs: {
-      description: 'Template literals should not be nested',
-      recommended: 'recommended',
-    },
-  },
-
-  defaultOptions: [],
-
   create(context) {
     return {
       'TemplateLiteral TemplateLiteral': (node: TSESTree.Node) => {
         const ancestors = ancestorsChain(node, new Set(['TemplateLiteral']));
         const nestingTemplate = ancestors[ancestors.length - 1];
 
-        const { start: nestingStart, end: nestingEnd } = nestingTemplate.loc;
-        const { start: nestedStart, end: nestedEnd } = node.loc;
+        const { end: nestingEnd, start: nestingStart } = nestingTemplate.loc;
+        const { end: nestedEnd, start: nestedStart } = node.loc;
 
         if (nestedStart.line === nestingStart.line || nestedEnd.line === nestingEnd.line) {
           context.report({
@@ -41,4 +26,20 @@ export default createEslintRule<Options, MessageIds>({
       },
     };
   },
+
+  defaultOptions: [],
+
+  meta: {
+    docs: {
+      description: 'Template literals should not be nested',
+      recommended: 'recommended',
+    },
+    messages: {
+      nestedTemplateLiterals: 'Refactor this code to not use nested template literals.',
+    },
+    schema: [],
+    type: 'suggestion',
+  },
+
+  name: RULE_NAME,
 });

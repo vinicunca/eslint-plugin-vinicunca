@@ -14,10 +14,10 @@ const invalids = [
 ];
 
 ruleTester.run(RULE_NAME, rule as any, {
-  valid: valids,
   invalid: invalids.map((i) => ({
     code: i[0],
-    output: i[1],
     errors: [{ messageId: 'missingIfNewline' }],
+    output: i[1],
   })),
+  valid: valids,
 });

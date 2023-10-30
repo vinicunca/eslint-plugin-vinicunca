@@ -6,26 +6,31 @@ export type Options = [];
 const PRESERVE_PREFIX_SPACE_BEFORE_GENERIC = new Set(['TSCallSignatureDeclaration', 'ArrowFunctionExpression', 'TSFunctionType', 'FunctionExpression']);
 
 export default createEslintRule<Options, MessageIds>({
-  name: RULE_NAME,
-
-  meta: {
-    type: 'layout',
-    docs: {
-      description: 'Spaces around generic type parameters',
-      recommended: 'stylistic',
-    },
-    fixable: 'whitespace',
-    schema: [],
-    messages: {
-      genericSpacingMismatch: 'Generic spaces mismatch',
-    },
-  },
-
-  defaultOptions: [],
-
   create: (context) => {
     const sourceCode = context.getSourceCode();
     return {
+      // add space around = in type Foo<T = true>
+      TSTypeParameter: (node) => {
+        if (!node.default) {
+          return;
+        };
+        const endNode = node.constraint || node.name;
+        const from = endNode.range[1];
+        const to = node.default.range[0];
+        if (sourceCode.text.slice(from, to) !== ' = ') {
+          context.report({
+            *fix(fixer) {
+              yield fixer.replaceTextRange([from, to], ' = ');
+            },
+            loc: {
+              end: node.default.loc.start,
+              start: endNode.loc.end,
+            },
+            messageId: 'genericSpacingMismatch',
+            node,
+          });
+        }
+      },
       TSTypeParameterDeclaration: (node) => {
         if (!PRESERVE_PREFIX_SPACE_BEFORE_GENERIC.has(node.parent.type)) {
           const pre = sourceCode.text.slice(0, node.range[0]);
@@ -33,11 +38,11 @@ export default createEslintRule<Options, MessageIds>({
           // strip space before <T>
           if (preSpace && preSpace.length) {
             context.report({
-              node,
-              messageId: 'genericSpacingMismatch',
               *fix(fixer) {
                 yield fixer.replaceTextRange([node.range[0] - preSpace.length, node.range[0]], '');
               },
+              messageId: 'genericSpacingMismatch',
+              node,
             });
           }
         }
@@ -56,8 +61,8 @@ export default createEslintRule<Options, MessageIds>({
                 yield fixer.replaceTextRange([from, to], ', ');
               },
               loc: {
-                start: prev.loc.end,
                 end: current.loc.start,
+                start: prev.loc.end,
               },
               messageId: 'genericSpacingMismatch',
               node,
@@ -65,28 +70,23 @@ export default createEslintRule<Options, MessageIds>({
           }
         }
       },
-      // add space around = in type Foo<T = true>
-      TSTypeParameter: (node) => {
-        if (!node.default) {
-          return;
-        };
-        const endNode = node.constraint || node.name;
-        const from = endNode.range[1];
-        const to = node.default.range[0];
-        if (sourceCode.text.slice(from, to) !== ' = ') {
-          context.report({
-            *fix(fixer) {
-              yield fixer.replaceTextRange([from, to], ' = ');
-            },
-            loc: {
-              start: endNode.loc.end,
-              end: node.default.loc.start,
-            },
-            messageId: 'genericSpacingMismatch',
-            node,
-          });
-        }
-      },
     };
   },
+
+  defaultOptions: [],
+
+  meta: {
+    docs: {
+      description: 'Spaces around generic type parameters',
+      recommended: 'stylistic',
+    },
+    fixable: 'whitespace',
+    messages: {
+      genericSpacingMismatch: 'Generic spaces mismatch',
+    },
+    schema: [],
+    type: 'layout',
+  },
+
+  name: RULE_NAME,
 });
