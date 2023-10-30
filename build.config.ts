@@ -6,6 +6,9 @@ export default defineBuildConfig({
   entries: [
     'src/index',
   ],
+  externals: [
+    '@typescript-eslint/utils',
+  ],
   rollup: {
     emitCJS: true,
   },
