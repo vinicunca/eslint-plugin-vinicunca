@@ -1,7 +1,7 @@
 {
   "name": "@vinicunca/eslint-plugin-vinicunca",
   "type": "module",
-  "version": "1.0.3",
+  "version": "1.0.2",
   "packageManager": "pnpm@8.8.0",
   "description": "Vinicunca ESLint rules",
   "author": {
@@ -41,6 +41,9 @@
     "registry": "pnpm publish --access public --no-git-checks",
     "release": "bumpp package.json --commit --push --tag --commit 'chore: release v'",
     "test": "vitest"
+  },
+  "peerDependencies": {
+    "eslint": "*"
   },
   "devDependencies": {
     "@types/eslint": "^8.44.6",
