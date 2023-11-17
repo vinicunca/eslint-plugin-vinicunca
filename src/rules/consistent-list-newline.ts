@@ -32,6 +32,7 @@ export default createEslintRule<Options, MessageIds>({
       return fixer.replaceTextRange(range, code.replace(/(\r\n|\n)/g, ''));
     }
 
+    // eslint-disable-next-line vinicunca/cognitive-complexity
     function check(
       node: TSESTree.Node,
       children: (TSESTree.Node | null)[],
@@ -169,7 +170,7 @@ export default createEslintRule<Options, MessageIds>({
         check(node, node.properties);
       },
       ObjectPattern(node) {
-        check(node, node.properties);
+        check(node, node.properties, undefined, node.typeAnnotation);
       },
       TSInterfaceDeclaration: (node) => {
         check(node, node.body.body);
@@ -218,7 +219,28 @@ export default createEslintRule<Options, MessageIds>({
       shouldNotWrap: 'Should not have line breaks between items',
       shouldWrap: 'Should have line breaks between items',
     },
-    schema: [],
+    schema: [{
+      additionalProperties: false,
+      properties: {
+        ArrayExpression: { type: 'boolean' },
+        ArrayPattern: { type: 'boolean' },
+        ArrowFunctionExpression: { type: 'boolean' },
+        CallExpression: { type: 'boolean' },
+        ExportNamedDeclaration: { type: 'boolean' },
+        FunctionDeclaration: { type: 'boolean' },
+        FunctionExpression: { type: 'boolean' },
+        ImportDeclaration: { type: 'boolean' },
+        NewExpression: { type: 'boolean' },
+        ObjectExpression: { type: 'boolean' },
+        ObjectPattern: { type: 'boolean' },
+        TSInterfaceDeclaration: { type: 'boolean' },
+        TSTupleType: { type: 'boolean' },
+        TSTypeLiteral: { type: 'boolean' },
+        TSTypeParameterDeclaration: { type: 'boolean' },
+        TSTypeParameterInstantiation: { type: 'boolean' },
+      } satisfies Record<keyof Options[0], { type: 'boolean' }>,
+      type: 'object',
+    }],
     type: 'layout',
   },
 
