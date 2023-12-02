@@ -28,7 +28,7 @@ export default createEslintRule<Options, MessageIds>({
   create: (context, [options = {}] = [{}]) => {
     function removeLines(fixer: RuleFixer, start: number, end: number) {
       const range = [start, end] as const;
-      const code = context.getSourceCode().text.slice(...range);
+      const code = context.sourceCode.text.slice(...range);
       return fixer.replaceTextRange(range, code.replace(/(\r\n|\n)/g, ''));
     }
 
@@ -36,7 +36,6 @@ export default createEslintRule<Options, MessageIds>({
     function check(
       node: TSESTree.Node,
       children: (TSESTree.Node | null)[],
-      prevNode?: TSESTree.Node,
       nextNode?: TSESTree.Node,
     ) {
       const items = children.filter(Boolean) as TSESTree.Node[];
@@ -44,9 +43,14 @@ export default createEslintRule<Options, MessageIds>({
         return;
       };
 
-      const startLine = prevNode
-        ? prevNode.loc.end.line
-        : node.loc.start.line;
+      const startToken = context.sourceCode.getTokenBefore(items[0]);
+      const endToken = context.sourceCode.getTokenAfter(items[items.length - 1]);
+      const startLine = startToken!.loc.start.line;
+
+      if (startToken!.loc.start.line === endToken!.loc.end.line) {
+        return;
+      }
+
       let mode: 'inline' | 'newline' | null = null;
       let lastLine = startLine;
 
@@ -61,6 +65,9 @@ export default createEslintRule<Options, MessageIds>({
 
         if (mode === 'newline' && currentStart === lastLine) {
           context.report({
+            data: {
+              name: node.type,
+            },
             *fix(fixer) {
               yield fixer.insertTextBefore(item, '\n');
             },
@@ -70,6 +77,9 @@ export default createEslintRule<Options, MessageIds>({
         } else if (mode === 'inline' && currentStart !== lastLine) {
           const lastItem = items[idx - 1];
           context.report({
+            data: {
+              name: node.type,
+            },
             *fix(fixer) {
               yield removeLines(fixer, lastItem!.range[1], item.range[0]);
             },
@@ -81,14 +91,20 @@ export default createEslintRule<Options, MessageIds>({
         lastLine = item.loc.end.line;
       });
 
-      const endLoc = nextNode?.loc.start ?? node.loc.end;
-      const endRange = nextNode?.range[0]
-        ? nextNode?.range[0] - 1
+      const endRange = nextNode
+        ? Math.min(
+          context.sourceCode.getTokenBefore(nextNode)!.range[0],
+          node.range[1],
+        )
         : node.range[1];
+      const endLoc = context.sourceCode.getLocFromIndex(endRange);
 
       const lastItem = items[items.length - 1]!;
       if (mode === 'newline' && endLoc.line === lastLine) {
         context.report({
+          data: {
+            name: node.type,
+          },
           *fix(fixer) {
             yield fixer.insertTextAfter(lastItem, '\n');
           },
@@ -100,13 +116,20 @@ export default createEslintRule<Options, MessageIds>({
         if (items.length === 1 && items[0].loc.start.line !== items[1]?.loc.start.line) {
           return;
         };
-        context.report({
-          *fix(fixer) {
-            yield removeLines(fixer, lastItem.range[1], endRange);
-          },
-          messageId: 'shouldNotWrap',
-          node: lastItem,
-        });
+
+        const content = context.sourceCode.text.slice(lastItem.range[1], endRange);
+        if (content.includes('\n')) {
+          context.report({
+            data: {
+              name: node.type,
+            },
+            *fix(fixer) {
+              yield removeLines(fixer, lastItem.range[1], endRange);
+            },
+            messageId: 'shouldNotWrap',
+            node: lastItem,
+          });
+        }
       }
     }
 
@@ -118,28 +141,18 @@ export default createEslintRule<Options, MessageIds>({
         check(node, node.elements);
       },
       ArrowFunctionExpression: (node) => {
+        if (node.params.length <= 1) {
+          return;
+        }
+
         check(
           node,
           node.params,
-          node.typeParameters || undefined,
           node.returnType || node.body,
         );
       },
       CallExpression: (node) => {
-        let startNode: TSESTree.Expression | TSESTree.PrivateIdentifier | TSESTree.TypeNode;
-
-        if (node.typeArguments?.params.length) {
-          // if has type generic, check the last type argument
-          startNode = node.typeArguments.params[node.typeArguments.params.length - 1];
-        } else if (node.callee.type === 'MemberExpression') {
-          // if the callee is a member expression, get the property
-          startNode = node.callee.property;
-        } else {
-          // else get the callee
-          startNode = node.callee;
-        }
-
-        check(node, node.arguments, startNode);
+        check(node, node.arguments);
       },
       ExportNamedDeclaration: (node) => {
         check(node, node.specifiers);
@@ -148,7 +161,6 @@ export default createEslintRule<Options, MessageIds>({
         check(
           node,
           node.params,
-          node.typeParameters || undefined,
           node.returnType || node.body,
         );
       },
@@ -156,7 +168,6 @@ export default createEslintRule<Options, MessageIds>({
         check(
           node,
           node.params,
-          node.typeParameters || undefined,
           node.returnType || node.body,
         );
       },
@@ -164,13 +175,13 @@ export default createEslintRule<Options, MessageIds>({
         check(node, node.specifiers);
       },
       NewExpression: (node) => {
-        check(node, node.arguments, node.callee);
+        check(node, node.arguments);
       },
       ObjectExpression: (node) => {
         check(node, node.properties);
       },
       ObjectPattern(node) {
-        check(node, node.properties, undefined, node.typeAnnotation);
+        check(node, node.properties, node.typeAnnotation);
       },
       TSInterfaceDeclaration: (node) => {
         check(node, node.body.body);
@@ -216,8 +227,8 @@ export default createEslintRule<Options, MessageIds>({
     },
     fixable: 'whitespace',
     messages: {
-      shouldNotWrap: 'Should not have line breaks between items',
-      shouldWrap: 'Should have line breaks between items',
+      shouldNotWrap: 'Should not have line breaks between items, in node {{name}}',
+      shouldWrap: 'Should have line breaks between items, in node {{name}}',
     },
     schema: [{
       additionalProperties: false,
@@ -247,5 +258,5 @@ export default createEslintRule<Options, MessageIds>({
   name: RULE_NAME,
 });
 
-// eslint-disable-next-line ts/no-unused-vars
+// eslint-disable-next-line ts/no-unused-vars,unused-imports/no-unused-vars
 function exportType<A, B extends A>() {}

@@ -4,23 +4,21 @@ import rule, { RULE_NAME } from './consistent-list-newline';
 ruleTester.run(RULE_NAME, rule as any, {
   invalid: [
     {
-      code: `
-const a = {
-foo: "bar",bar: 2}
-`,
+      code: `const a = {
+foo: "bar", bar: 2 }`,
       errors: [
         { messageId: 'shouldWrap' },
         { messageId: 'shouldWrap' },
       ],
-      output: `
-const a = {
-foo: "bar",
+      output: `const a = {
+foo: "bar", 
 bar: 2
-}
-`,
+ }`,
     },
     {
-      code: 'const a = {foo: "bar", \nbar: 2\n}',
+      code: `const a = {foo: "bar", 
+bar: 2
+}`,
       errors: [
         { messageId: 'shouldNotWrap' },
         { messageId: 'shouldNotWrap' },
@@ -28,12 +26,16 @@ bar: 2
       output: 'const a = {foo: "bar", bar: 2}',
     },
     {
-      code: 'const a = [\n1,2,3\n]',
+      code: 'const a = [\n1, 2, 3\n]',
       errors: [
         { messageId: 'shouldWrap' },
         { messageId: 'shouldWrap' },
       ],
-      output: 'const a = [\n1,\n2,\n3\n]',
+      output: `const a = [
+1, 
+2, 
+3
+]`,
     },
     {
       code: 'const a = [1, \n2, 3\n]',
@@ -44,12 +46,15 @@ bar: 2
       output: 'const a = [1, 2, 3]',
     },
     {
-      code: 'import {\nfoo,bar } from "foo"',
+      code: 'import {\nfoo, bar } from "foo"',
       errors: [
         { messageId: 'shouldWrap' },
         { messageId: 'shouldWrap' },
       ],
-      output: 'import {\nfoo,\nbar\n } from "foo"',
+      output: `import {
+foo, 
+bar
+ } from "foo"`,
     },
     {
       code: 'import { foo, \nbar } from "foo"',
@@ -67,52 +72,72 @@ bar: 2
       output: 'const a = {foo: "bar", bar: 2}',
     },
     {
-      code: 'log(\na,b)',
+      code: 'log(\na, b)',
       errors: [
         { messageId: 'shouldWrap' },
         { messageId: 'shouldWrap' },
       ],
-      output: 'log(\na,\nb\n)',
+      output: `log(
+a, 
+b
+)`,
     },
     {
-      code: 'function foo(\na,b) {}',
+      code: 'function foo(\na, b) {}',
       errors: [
         { messageId: 'shouldWrap' },
         { messageId: 'shouldWrap' },
       ],
-      output: 'function foo(\na,\nb\n) {}',
+      output: `function foo(
+a, 
+b
+) {}`,
     },
     {
-      code: 'const foo = (\na,b) => {}',
+      code: 'const foo = (\na, b) => {}',
       errors: [
         { messageId: 'shouldWrap' },
         { messageId: 'shouldWrap' },
       ],
-      output: 'const foo = (\na,\nb\n) => {}',
+      output: `const foo = (
+a, 
+b
+) => {}`,
     },
     {
-      code: 'const foo = (\na,b): {\na:b} => {}',
+      code: 'const foo = (\na, b): {\na:b} => {}',
       errors: [
         { messageId: 'shouldWrap' },
         { messageId: 'shouldWrap' },
         { messageId: 'shouldWrap' },
       ],
-      output: 'const foo = (\na,\nb\n): {\na:b\n} => {}',
+      output: `const foo = (
+a, 
+b
+): {
+a:b
+} => {}`,
     },
     {
-      code: 'const foo = (\na,b): {a:b} => {}',
+      code: 'const foo = (\na, b): {a:b} => {}',
       errors: [
         { messageId: 'shouldWrap' },
         { messageId: 'shouldWrap' },
       ],
-      output: 'const foo = (\na,\nb\n): {a:b} => {}',
+      output: `const foo = (
+a, 
+b
+): {a:b} => {}`,
     },
     {
       code: 'interface Foo {\na: 1,b: 2\n}',
       errors: [
         { messageId: 'shouldWrap' },
       ],
-      output: 'interface Foo {\na: 1,\nb: 2\n}',
+      output: `interface Foo {
+a: 1,
+b: 2
+}`,
     },
     {
       code: 'type Foo = {\na: 1,b: 2\n}',
@@ -158,11 +183,27 @@ bar: 2
       output: 'foo(()=>bar(),()=>\nbaz())',
     },
     {
-      code: 'foo<X,\nY>()',
+      code: 'foo<X,\nY>(1, 2)',
       errors: [
         { messageId: 'shouldNotWrap' },
       ],
-      output: 'foo<X,Y>()',
+      output: 'foo<X,Y>(1, 2)',
+    },
+    {
+      code: 'foo<\nX,Y>(\n1, 2)',
+      errors: [
+        { messageId: 'shouldWrap' },
+        { messageId: 'shouldWrap' },
+        { messageId: 'shouldWrap' },
+        { messageId: 'shouldWrap' },
+      ],
+      output: `foo<
+X,
+Y
+>(
+1, 
+2
+)`,
     },
     {
       code: 'function foo<\nX,Y>() {}',
@@ -170,7 +211,73 @@ bar: 2
         { messageId: 'shouldWrap' },
         { messageId: 'shouldWrap' },
       ],
-      output: 'function foo<\nX,\nY\n>() {}',
+      output: `function foo<
+X,
+Y
+>() {}`,
+    },
+    {
+      code: 'const {a,\nb\n} = c',
+      errors: [
+        { messageId: 'shouldNotWrap' },
+        { messageId: 'shouldNotWrap' },
+      ],
+      output: 'const {a,b} = c',
+    },
+    {
+      code: 'const [\na,b] = c',
+      errors: [
+        { messageId: 'shouldWrap' },
+        { messageId: 'shouldWrap' },
+      ],
+      output: `const [
+a,
+b
+] = c`,
+    },
+    {
+      code: 'foo(([\na,b]) => {})',
+      errors: [
+        { messageId: 'shouldWrap' },
+        { messageId: 'shouldWrap' },
+      ],
+      output: `foo(([
+a,
+b
+]) => {})`,
+    },
+    {
+      code: `
+const a = (
+  <div>
+    {text.map((
+      item, index) => (
+      <p>
+      </p>
+    ))}
+  </div>
+)`,
+      errors: [
+        { messageId: 'shouldWrap' },
+        { messageId: 'shouldWrap' },
+      ],
+      output: `
+const a = (
+  <div>
+    {text.map((
+      item, 
+index
+) => (
+      <p>
+      </p>
+    ))}
+  </div>
+)`,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
     },
   ],
   valid: [
@@ -253,5 +360,37 @@ bar: 2
       a: 1,
       b: 2
     }>(a, b) {}`,
+    `export const getTodoList = request.post<
+      Params,
+      ResponseData,
+    >('/api/todo-list')
+    `,
+    {
+      code: `
+function TodoList() {
+  const { data, isLoading } = useSwrInfinite(
+    (page) => ['/api/todo/list', { page }],
+    ([, params]) => getToDoList(params),
+  )
+  return <div></div>
+}`,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+  `
+  bar(
+    foo => foo
+      ? ''
+      : ''
+  )`,
+  `
+  bar(
+    (ruleName, foo) => foo
+      ? ''
+      : ''
+  )`,
   ],
 });
