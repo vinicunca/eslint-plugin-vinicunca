@@ -52,7 +52,7 @@
     "@typescript-eslint/utils": "^6.13.1",
     "@vinicunca/eslint-config": "^2.0.11",
     "bumpp": "^9.2.0",
-    "eslint": "^8.54.0",
+    "eslint": "^8.55.0",
     "rimraf": "^5.0.5",
     "typescript": "^5.3.2",
     "unbuild": "^2.0.0",
