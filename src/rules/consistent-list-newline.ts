@@ -32,7 +32,6 @@ export default createEslintRule<Options, MessageIds>({
       return fixer.replaceTextRange(range, code.replace(/(\r\n|\n)/g, ''));
     }
 
-    // eslint-disable-next-line vinicunca/cognitive-complexity
     function check(
       node: TSESTree.Node,
       children: (TSESTree.Node | null)[],
