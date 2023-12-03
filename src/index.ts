@@ -3,10 +3,8 @@ import type { ESLint, Linter } from 'eslint';
 import { version } from '../package.json';
 import cognitiveComplexity from './rules/cognitive-complexity';
 import consistentListNewline from './rules/consistent-list-newline';
-import genericSpacing from './rules/generic-spacing';
 import ifNewline from './rules/if-newline';
 import importDedupe from './rules/import-dedupe';
-import namedTupleSpacing from './rules/named-tuple-spacing';
 import noAllDuplicatedBranches from './rules/no-all-duplicated-branches';
 import noCjsExports from './rules/no-cjs-exports';
 import noCollapsibleIf from './rules/no-collapsible-if';
@@ -62,10 +60,8 @@ const plugin = {
   rules: {
     'cognitive-complexity': cognitiveComplexity,
     'consistent-list-newline': consistentListNewline,
-    'generic-spacing': genericSpacing,
     'if-newline': ifNewline,
     'import-dedupe': importDedupe,
-    'named-tuple-spacing': namedTupleSpacing,
     'no-all-duplicated-branches': noAllDuplicatedBranches,
     'no-cjs-exports': noCjsExports,
     'no-collapsible-if': noCollapsibleIf,
