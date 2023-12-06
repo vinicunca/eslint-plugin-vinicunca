@@ -6,7 +6,6 @@ import consistentListNewline from './rules/consistent-list-newline';
 import ifNewline from './rules/if-newline';
 import importDedupe from './rules/import-dedupe';
 import noAllDuplicatedBranches from './rules/no-all-duplicated-branches';
-import noCjsExports from './rules/no-cjs-exports';
 import noCollapsibleIf from './rules/no-collapsible-if';
 import noDuplicateString from './rules/no-duplicate-string';
 import noDuplicatedBranches from './rules/no-duplicated-branches';
@@ -23,7 +22,6 @@ import noTsExportEqual from './rules/no-ts-export-equal';
 import noUnusedCollection from './rules/no-unused-collection';
 import noUseOfEmptyReturnValue from './rules/no-use-of-empty-return-value';
 import preferImmediateReturn from './rules/prefer-immediate-return';
-import preferInlineTypeImport from './rules/prefer-inline-type-import';
 import preferSingleBooleanReturn from './rules/prefer-single-boolean-return';
 import topLevelFunction from './rules/top-level-function';
 
@@ -63,7 +61,6 @@ const plugin = {
     'if-newline': ifNewline,
     'import-dedupe': importDedupe,
     'no-all-duplicated-branches': noAllDuplicatedBranches,
-    'no-cjs-exports': noCjsExports,
     'no-collapsible-if': noCollapsibleIf,
     'no-duplicate-string': noDuplicateString,
     'no-duplicated-branches': noDuplicatedBranches,
@@ -80,7 +77,6 @@ const plugin = {
     'no-unused-collection': noUnusedCollection,
     'no-use-of-empty-return-value': noUseOfEmptyReturnValue,
     'prefer-immediate-return': preferImmediateReturn,
-    'prefer-inline-type-import': preferInlineTypeImport,
     'prefer-single-boolean-return': preferSingleBooleanReturn,
     'top-level-function': topLevelFunction,
   },
